@@ -1,11 +1,17 @@
 import utils.myutils as myutils
 import utils.sqlutils as sqlutils
 from spiders.SpiderThread import SpiderThread
+import argparse
+import sys
+import re
+
+sys.path.append(myutils.get_project_path() + '/venv/lib/python3.6/site-packages' )
+
 logger = myutils.init_logging()
 
 
 def main(list_isbn):
-    isbn_list = [1234567898]
+    isbn_list = list_isbn
     spider_thread_list = []
     count = 1
     for isbn in isbn_list:
@@ -26,4 +32,19 @@ def main(list_isbn):
 
     return result_list
 
-main()
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        '--isbn_list',
+        type=str,
+        default='123456789123 1234251425621',
+        help='input isbn list, example: "123456789123 1234251425621" '
+    )
+
+    args = parser.parse_args()
+
+    list_isbn = re.split(r' +', args.isbn_list)
+
+    main(list_isbn)

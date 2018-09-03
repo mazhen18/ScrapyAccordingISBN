@@ -1,5 +1,5 @@
 import threading
-from utils.scrapyutils import scrap_bookinfs
+from utils.scrapyutils import scrap_bookinfos
 
 
 class SpiderThread(threading.Thread):
@@ -12,4 +12,4 @@ class SpiderThread(threading.Thread):
         self.isbn = isbn
 
     def run(self):
-        scrap_bookinfs(self.isbn)
+        scrap_bookinfos(self.isbn)

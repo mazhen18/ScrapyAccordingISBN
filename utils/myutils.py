@@ -1,16 +1,12 @@
-from api import query_isbn
+from api.query_isbn import query_isbn
 import yaml
 import logging.config
 import os
+logger = logging.getLogger('myutils')
 
 
-def query_book_infos(isbn):
-    book_infos = query_isbn(isbn)
-    status = book_infos.get('status')
-    if status == 0:
-        return book_infos.get('result')
-    else:
-        print()
+def query_book_infos(isbn, company_code=1):
+    return query_isbn(isbn, company_code)
 
 
 def get_project_path():
@@ -20,7 +16,7 @@ def get_project_path():
 
 def init_logging():
     def setup_logging(default_path="logging.yaml", default_level=logging.INFO, env_key="LOG_CFG"):
-        log_dir = myutils.get_project_path() + "/log/"
+        log_dir = get_project_path() + "/log/"
         log_dirs_list = ['info', 'debug', 'warning', 'error']
         for dir in log_dirs_list:
             path = log_dir + dir
@@ -43,6 +39,15 @@ def init_logging():
 def check_isbn(isbn):
     len_isbn = len(isbn)
     return (len_isbn == 13 or len_isbn == 10) and isbn.isdigit()
+
+
+def obj2dict(obj):
+    pr = {}
+    for name in dir(obj):
+        value = getattr(obj, name)
+        if not name.startswith('__') and not callable(value) and not name.startswith('_'):
+            pr[name] = value
+    return pr
 
 
 
