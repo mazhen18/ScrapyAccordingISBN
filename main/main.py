@@ -1,11 +1,12 @@
 import utils.myutils as myutils
+import utils.pathutils
 import utils.sqlutils as sqlutils
 from spiders.SpiderThread import SpiderThread
 import argparse
 import sys
 import re
 
-sys.path.append(myutils.get_project_path() + '/venv/lib/python3.6/site-packages' )
+sys.path.append(utils.pathutils.get_project_path() + '/venv/lib/python3.6/site-packages')
 
 logger = myutils.init_logging()
 

@@ -1,8 +1,13 @@
 from utils import myutils
 import utils.sqlutils as sqlutils
+from utils import pathutils
+from utils.pathutils import get_run_spider_path
+from utils.pathutils import get_virtualenv_python_path as get_python_path
 import logging
 from data_struct.book import BookBaseInfos
 import threading
+import os
+
 logger = logging.getLogger('scrapyutils')
 
 
@@ -120,11 +125,15 @@ class SpiderStartThread(threading.Thread):
         self.spider_name = spider_name
 
     def run(self):
-        print('启动爬虫')
+        command_cd = 'cd %s' % pathutils.get_project_path() + '/spiders/isbnSpider'
+        command_start_spider = get_python_path() + " " \
+                               + get_run_spider_path() \
+                               + (' --spider_name=%s --isbn13=%s' % (self.spider_name, self.isbn13))
+        os.system(command_cd + ' && ' + command_start_spider)
 
 
 def start_scrapy(spider_name, isbn13):
     #在线程里启动爬虫
-    t = SpiderStartThread('thread-%s-%s' % (isbn13, spider_name), isbn13, spider_name)
+    t = SpiderStartThread('thread-%s-%s' % (spider_name, isbn13), isbn13, spider_name)
     t.start()
     t.join()

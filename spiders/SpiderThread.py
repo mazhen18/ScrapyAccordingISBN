@@ -1,7 +1,6 @@
 import threading
 from utils.scrapyutils import scrap_bookinfos
 
-
 class SpiderThread(threading.Thread):
     """"""
 

@@ -2,16 +2,14 @@ from api.query_isbn import query_isbn
 import yaml
 import logging.config
 import os
+
+from utils.pathutils import get_project_path
+
 logger = logging.getLogger('myutils')
 
 
 def query_book_infos(isbn, company_code=1):
     return query_isbn(isbn, company_code)
-
-
-def get_project_path():
-    project_path = os.path.abspath('..')
-    return project_path
 
 
 def init_logging():
