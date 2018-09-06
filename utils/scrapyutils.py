@@ -37,10 +37,17 @@ def scrap_bookinfos(isbn13):
         logger.warning("func:scrap_bookinfs, invalid argumant isbn:%s" % isbn13)
 
 
+def get_title(title, subtitle):
+    if subtitle == '':
+        return title
+    else:
+        return title + ':' + subtitle
+
+
 def get_book_base_infos_from_api(book_infos):
     book_base_infos = BookBaseInfos()
     book_base_infos.isbn13 = book_infos.get('isbn')
-    book_base_infos.title = book_infos.get('title')
+    book_base_infos.title = get_title(book_infos.get('title'), book_infos.get('subtitle'))
     book_base_infos.pic = book_infos.get('pic')
     book_base_infos.author = book_infos.get('author')
     book_base_infos.summary = book_infos.get('summary')
@@ -49,7 +56,6 @@ def get_book_base_infos_from_api(book_infos):
     book_base_infos.page = book_infos.get('page')
     book_base_infos.binding = book_infos.get('binding')
     book_base_infos.price = book_infos.get('price')
-    book_base_infos.subtitle = book_infos.get('subtitle')
     book_base_infos.pubplace = book_infos.get('pubplace')
     book_base_infos.isbn10 = book_infos.get('isbn10')
     book_base_infos.keyword = book_infos.get('keyword')

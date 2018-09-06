@@ -18,7 +18,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--spider_name',
         type=str,
-        default='trans_name',
+        default='classfication',
         help='input spider name'
     )
 

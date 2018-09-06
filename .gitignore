@@ -9,5 +9,8 @@
 /spiders/isbnSpider/isbnSpider/__pycache__
 /spiders/isbnSpider/isbnSpider/spiders/__pycache__
 /test_moduel/__pycache__
+/spiders/isbnSpider/isbnSpider/data_scrapy/__pycache__/
+/spiders/isbnSpider/isbnSpider/geckodriver.log
+/spiders/isbnSpider/isbnSpider/mysql_pipelines/__pycache__/
 /utils/__pycache__
 /unit_test

@@ -17,7 +17,7 @@ def query_isbn_1(isbn):
     host = 'http://aliapi63.jisuapi.com'
     path = '/isbn/query'
     # method = 'GET'
-    appcode = 'a1ede7bb030d402593334d6a15c9bdbf'
+    appcode = 'a0ede7bb030d402593334d6a15c9bdbf'
     querys = 'isbn=' + isbn
     # bodys = {}
     url = host + path + '?' + querys
@@ -46,7 +46,7 @@ def query_isbn_2(isbn):
     host = 'http://isbn.market.alicloudapi.com'
     path = '/ISBN'
     # method = 'GET'
-    appcode = 'a1ede7bb030d402593334d6a15c9bdbf'
+    appcode = 'a0ede7bb030d402593334d6a15c9bdbf'
     querys = 'is_info=0&isbn=%s' % isbn
     # bodys = {}
     url = host + path + '?' + querys

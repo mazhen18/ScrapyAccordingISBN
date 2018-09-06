@@ -15,7 +15,7 @@ class BookBaseInfos():
     classfication = ''
     currency = ''  #币种
 
-    subtitle = '' #副标题
+    # subtitle = '' #副标题
     pubplace = ''
     isbn10 = ''
     keyword = ''
