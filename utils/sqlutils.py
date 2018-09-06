@@ -21,7 +21,7 @@ def query_list_isbn(list_isbn):
     try:
         return excute_query_sql(sql)
     except Exception as e:
-        raise Exception(e + get_log_msg('query_trans_name', 'sql=%s' % sql))
+        raise Exception(('%s' % e) + get_log_msg('insert_bookbaseinfos', 'sql=%s' % sql))
 
 
 def update_bookbaseinfos(ditc_bookbaseinfos):
@@ -32,7 +32,7 @@ def update_bookbaseinfos(ditc_bookbaseinfos):
     try:
         excute_no_query_sql(sql)
     except Exception as e:
-        raise Exception(e + get_log_msg('insert_bookbaseinfos', 'sql=%s' % sql))
+        raise Exception(('%s' % e) + get_log_msg('insert_bookbaseinfos', 'sql=%s' % sql))
 
 
 def insert_bookbaseinfos(ditc_bookbaseinfos):
@@ -42,7 +42,7 @@ def insert_bookbaseinfos(ditc_bookbaseinfos):
     try:
         excute_no_query_sql(sql)
     except Exception as e:
-        raise Exception(e + get_log_msg('insert_bookbaseinfos', 'sql=%s' % sql))
+        raise Exception(('%s' % e) + get_log_msg('insert_bookbaseinfos', 'sql=%s' % sql))
 
 
 def generate_insert_sql(table_name, dict_data):
@@ -75,10 +75,16 @@ def excute_query_sql(sql):
 
         results = cur.fetchall()  # 获取查询的所有记录
 
-        return results if not results[0][0] == '' else None
+        if len(results) == 0:
+            return ['']
+        else:
+            if results[0][0] == '':
+                return ['']
+            else:
+                return results
 
     except Exception as e:
-        raise Exception(e + '==>func:excute_query_sql, sql=%s\n' % sql)
+        raise Exception(('%s' % e) + get_log_msg('insert_bookbaseinfos', 'sql=%s' % sql))
     finally:
         db.close()
 
@@ -90,7 +96,7 @@ def excute_no_query_sql(sql):
         cursor.execute(sql)
         db.commit()  # 提交当前事务
     except pymysql.Error as e:
-        raise Exception(e + get_log_msg('excute_no_query_sql', 'sql=%s' % sql))
+        raise Exception(('%s' % e) + get_log_msg('insert_bookbaseinfos', 'sql=%s' % sql))
     finally:
         db.close()
 
@@ -102,7 +108,7 @@ def query_title(isbn13):
     try:
         return excute_query_sql(sql)
     except Exception as e:
-        raise Exception(e + get_log_msg('query_title', 'sql=%s' % sql))
+        raise Exception(('%s' % e) + get_log_msg('insert_bookbaseinfos', 'sql=%s' % sql))
 
 
 def query_trans_name(title):
@@ -111,5 +117,5 @@ def query_trans_name(title):
     try:
         return excute_query_sql(sql)
     except Exception as e:
-        raise Exception(e + get_log_msg('query_trans_name', 'sql=%s' % sql))
+        raise Exception(('%s' % e) + get_log_msg('insert_bookbaseinfos', 'sql=%s' % sql))
 

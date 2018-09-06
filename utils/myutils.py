@@ -138,7 +138,17 @@ def google_translate(content):
 
 
 def get_log_msg(function_name, cur_msg):
-    return '\n ==> [' + function_name + '] msg=' + cur_msg + '\n'
+    return '\n ==> [%s] msg=%s\n' % (function_name, cur_msg)
+
+
+def get_valid_search_text(text):
+
+    result = text
+    if len(text) > 70:
+        text = text[:70]
+        result = ' '.join(text.split(' ')[:-1])
+    return result
+
 
 
 

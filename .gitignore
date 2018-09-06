@@ -13,4 +13,5 @@
 /spiders/isbnSpider/isbnSpider/geckodriver.log
 /spiders/isbnSpider/isbnSpider/mysql_pipelines/__pycache__/
 /utils/__pycache__
+/exception/__pycache__/
 /unit_test

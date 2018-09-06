@@ -7,6 +7,7 @@ import logging
 from data_struct.book import BookBaseInfos
 import threading
 import os
+from .data_check_utils import check_data
 
 logger = logging.getLogger('scrapyutils')
 
@@ -14,7 +15,7 @@ logger = logging.getLogger('scrapyutils')
 def scrap_bookinfos(isbn13):
     if myutils.check_isbn(isbn13):
         result = sqlutils.query_list_isbn([isbn13])
-        if len(result) > 0:
+        if len(result) > 0 and result[0] != '':
             # 更新一些可能变化的数据，暂时不更新
             # logger.info('func:scrap_bookinfos, isbn already in database:%s:' % isbn)
             # 判断是否存在空的必填值，如果有这要查询剩余值
@@ -23,8 +24,8 @@ def scrap_bookinfos(isbn13):
                 scrapy_api_unable_get_infos(book_base_infos)
         else:
             #开始爬取数据，先从api获取
-            # book_infos = myutils.query_book_infos(isbn13, company_code=1)
-            book_infos = {'title': 'Principles', 'subtitle': 'Life and Work', 'pic': 'http://api.jisuapi.com/isbn/upload/201808/30214633_82281.jpg', 'author': 'Ray Dalio', 'summary': 'Ray Dalio, one of the world’s most successful investors and entrepreneurs, shares the unconventional principles that he’s developed, refined, and used over the past forty years to create unique results in both life and business—and which any person or organization can adopt to help achieve their goals.\nIn 1975, Ray Dalio founded an investment firm, Bridgewater Associates, out of his two-bedroom apartment in New York City. Forty years later, Bridgewater has made more money for its clients than an', 'publisher': 'Simon & Schuster', 'pubplace': '', 'pubdate': '2017-9-19', 'page': '592', 'price': '0.00', 'binding': 'Hardcover', 'isbn': '9781501124020', 'isbn10': '1501124021', 'keyword': '', 'edition': '', 'impression': '', 'language': '', 'format': '', 'class': ''}
+            book_infos = myutils.query_book_infos(isbn13, company_code=1)
+            # book_infos = {'title': 'Principles', 'subtitle': 'Life and Work', 'pic': 'http://api.jisuapi.com/isbn/upload/201808/30214633_82281.jpg', 'author': 'Ray Dalio', 'summary': 'Ray Dalio, one of the world’s most successful investors and entrepreneurs, shares the unconventional principles that he’s developed, refined, and used over the past forty years to create unique results in both life and business—and which any person or organization can adopt to help achieve their goals.\nIn 1975, Ray Dalio founded an investment firm, Bridgewater Associates, out of his two-bedroom apartment in New York City. Forty years later, Bridgewater has made more money for its clients than an', 'publisher': 'Simon & Schuster', 'pubplace': '', 'pubdate': '2017-9-19', 'page': '592', 'price': '0.00', 'binding': 'Hardcover', 'isbn': '9781501124020', 'isbn10': '1501124021', 'keyword': '', 'edition': '', 'impression': '', 'language': '', 'format': '', 'class': ''}
             if book_infos:
                 #获取api查询中的数据
                 book_base_infos = get_book_base_infos_from_api(book_infos)
@@ -55,7 +56,7 @@ def get_book_base_infos_from_api(book_infos):
     book_base_infos.publisher = book_infos.get('publisher')
     book_base_infos.page = book_infos.get('page')
     book_base_infos.binding = book_infos.get('binding')
-    book_base_infos.price = book_infos.get('price')
+    book_base_infos.price = check_data('price', book_infos.get('price'))
     book_base_infos.pubplace = book_infos.get('pubplace')
     book_base_infos.isbn10 = book_infos.get('isbn10')
     book_base_infos.keyword = book_infos.get('keyword')
@@ -69,28 +70,27 @@ def get_book_base_infos_from_api(book_infos):
 
 def convert_db_data_to_bookbaseinfos(db_data):
     book_base_infos = BookBaseInfos()
-    book_base_infos.isbn13 = db_data[1]
-    book_base_infos.title = db_data[2]
-    book_base_infos.pic = db_data[3]
-    book_base_infos.author = db_data[4]
-    book_base_infos.summary = db_data[5]
-    book_base_infos.pubdate = db_data[6]
-    book_base_infos.publisher = db_data[7]
-    book_base_infos.page = db_data[8]
-    book_base_infos.binding = db_data[9]
-    book_base_infos.price = db_data[10]
-    book_base_infos.trans_name = db_data[11]
+    book_base_infos.isbn13 =        db_data[0]
+    book_base_infos.isbn10 =        db_data[1]
+    book_base_infos.title =         db_data[2]
+    book_base_infos.trans_name =    db_data[3]
+    book_base_infos.author =        db_data[4]
+    book_base_infos.summary =       db_data[5]
+    book_base_infos.pubdate =       db_data[6]
+    book_base_infos.publisher =     db_data[7]
+    book_base_infos.binding =       db_data[8]
+    book_base_infos.page =          db_data[9]
+    book_base_infos.currency =      db_data[10]
+    book_base_infos.price =         db_data[11]
     book_base_infos.classfication = db_data[12]
-    book_base_infos.currency = db_data[13]
-    book_base_infos.subtitle = db_data[14]
-    book_base_infos.pubplace = db_data[15]
-    book_base_infos.isbn10 = db_data[16]
-    book_base_infos.keyword = db_data[17]
-    book_base_infos.edition = db_data[18]
-    book_base_infos.impression = db_data[19]
-    book_base_infos.body_language = db_data[20]
-    book_base_infos.format = db_data[21]
-    book_base_infos.class_cn = db_data[22]
+    book_base_infos.pic =           db_data[13]
+    book_base_infos.pubplace =      db_data[14]
+    book_base_infos.keyword =       db_data[15]
+    book_base_infos.edition =       db_data[16]
+    book_base_infos.impression =    db_data[17]
+    book_base_infos.body_language = db_data[18]
+    book_base_infos.format =        db_data[19]
+    book_base_infos.class_cn =      db_data[20]
     return book_base_infos
 
 

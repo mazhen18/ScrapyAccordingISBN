@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from utils import myutils
 
 
@@ -45,9 +47,16 @@ def check_classfication(classfication):
 
     try:
         class_list = classfication.split('>')
-
         if class_list[0] == '图书':
-            return classfication
+            element_list = []
+            result_list = []
+            for c in class_list:
+                if c == '图书' and len(element_list) != 0:
+                    result_list.append('>'.join(element_list))
+                    element_list = []
+                element_list.append(c)
+            result_list.append('>'.join(element_list))
+            return '\n'.join(result_list)
         else:
             return ''
     except:

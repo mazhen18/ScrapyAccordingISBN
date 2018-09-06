@@ -45,7 +45,7 @@ def get_allowed_domains():
     return allowed_domains
 
 
-def get_attr_by_chromedriver(url, xpath, attr):
+def get_data_by_chromedriver(url, xpath, attr=None):
 
     option = webdriver.ChromeOptions()
 
@@ -57,12 +57,15 @@ def get_attr_by_chromedriver(url, xpath, attr):
 
         driver.get(url)
 
-        element = driver.find_element_by_xpath(xpath) #Selenium的xpath只能获取到元素，属性要靠get_attribute获取
+        element = driver.find_element_by_xpath(xpath) #Selenium的xpath只能获取到元素，连text()都不能加，属性要靠get_attribute获取
 
-        return element.get_attribute(attr)
+        if attr:
+            return element.get_attribute(attr)
+        else:
+            return element.text
     except BaseException as e:
 
-        raise SeleniumDriverException(message='通过Selenium Driver 请求数据失败，e.msg=%s' % e)
+        raise SeleniumDriverException(message=('通过Selenium Driver 请求数据失败，e.msg=%s' % e))
 
     finally:
         driver.quit()

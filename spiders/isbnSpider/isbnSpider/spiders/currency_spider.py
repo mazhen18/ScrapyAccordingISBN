@@ -1,6 +1,6 @@
 import scrapy
 import logging
-from ..data_scrapy.data_check import check_data
+from utils.data_check_utils import check_data
 from ..inner_spider_utils import get_allowed_domains
 from ..inner_spider_utils import generate_item
 logger = logging.getLogger('currency_spider')
