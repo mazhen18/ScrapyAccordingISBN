@@ -15,7 +15,7 @@ def run_spider(spider_name, isbn13):
 
         process.start()
     except Exception as e:
-        logger.warning(get_log_msg('run_spider', e))
+        print(get_log_msg('run_spider', e))
 
 
 if __name__ == '__main__':
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--isbn13',
         type=str,
-        default='9780553213102',
+        default='9781529004717',
         help='input isbn13, example: "123456789123" '
     )
 

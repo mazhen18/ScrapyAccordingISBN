@@ -31,7 +31,7 @@ def scrap_bookinfos(isbn13):
             book_infos = myutils.query_book_infos(isbn13, company_code=1)
             # book_infos = {'title': 'Barbara Rae', 'subtitle': '', 'pic': 'http://api.jisuapi.com/isbn/upload/201809/07103254_68770.jpg', 'author': 'Hare, Bill/ Lambirth, Andrew/ ', 'summary': "Review\n'This is a strong, well-designed monograph... The authors deserve praise for their thorough and engaging writing and the illustrations brilliantly convey the power of paintings.' ----- The Art Book\nProduct Description\nThis is the first fully illustrated monograph of Barbara Rae's career to date. One of Britain's outstanding contemporary painters, Rae is a Royal Academician and the recipient of numerous awards including two doctorates and Commander of the British Empire (CBE). Known for th", 'publisher': '', 'pubplace': '', 'pubdate': '2008-5', 'page': '192', 'price': '487.66', 'binding': '', 'isbn': '9780853319900', 'isbn10': '0853319901', 'keyword': '', 'edition': '', 'impression': '', 'language': '', 'format': '', 'class': ''}
             if book_infos:
-                logger.info(get_log_msg('scrap_bookinfos', 'isbn13=%s,book_infos=%s' % (isbn13, book_infos)))
+                print(get_log_msg('scrap_bookinfos', 'isbn13=%s,book_infos=%s' % (isbn13, book_infos)))
                 #获取api查询中的数据
                 book_base_infos = get_book_base_infos_from_api(book_infos)
                 sqlutils.insert_bookbaseinfos(myutils.obj2dict(book_base_infos))
@@ -41,7 +41,7 @@ def scrap_bookinfos(isbn13):
                 print('没有该ISBN数据信息：%s' % isbn13)
                 myutils.append_unfound_isbn13_to_txt(isbn13)
     else:
-        logger.warning(get_log_msg("scrap_bookinfs", "invalid argumant isbn13 or isbn13 in unfound_isbn13.txt,isbn13:%s" % isbn13))
+        print(get_log_msg("scrap_bookinfs", "invalid argumant isbn13 or isbn13 in unfound_isbn13.txt,isbn13:%s" % isbn13))
 
 
 def get_title(title, subtitle):

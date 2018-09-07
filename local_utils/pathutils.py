@@ -2,7 +2,8 @@ import os
 
 
 def get_project_path():
-    project_path = os.path.abspath('..')
+    cur_file_path = os.path.abspath(__file__)
+    project_path = os.path.dirname(os.path.dirname(cur_file_path))
     return project_path
 
 
@@ -30,5 +31,9 @@ def get_run_spider_path():
 
 def get_unfound_isbn13_txt_path():
     return get_project_path() + "/log/unfound_isbn13.txt"
+
+
+def get_proxies_txt_path():
+    return get_project_path() + "/proxy/proxies.txt"
 
 

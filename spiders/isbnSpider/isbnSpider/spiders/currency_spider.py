@@ -29,4 +29,4 @@ class CurrencySpider(scrapy.Spider):
 
             yield generate_item('currency', self.isbn13, result)
         except Exception as e:
-            logger.warning(get_log_msg('parse', 'isbn13=%, e.msg=%s' % (self.isbn13, e)))
+            print(get_log_msg('parse', 'isbn13=%, e.msg=%s' % (self.isbn13, e)))

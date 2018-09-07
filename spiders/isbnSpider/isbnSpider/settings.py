@@ -93,3 +93,13 @@ ITEM_PIPELINES = {
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+# DOWNLOADER_MIDDLEWARES = {
+#
+#      'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware':None,
+#      'isbnSpider.middlewares.ProxyMiddleWare': 125,
+#      'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware':None
+# }
+
+DOWNLOAD_TIMEOUT = 8
+
+

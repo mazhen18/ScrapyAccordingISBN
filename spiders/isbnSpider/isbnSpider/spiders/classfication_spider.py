@@ -2,6 +2,7 @@ import scrapy
 import logging
 from ..inner_spider_utils import generate_item
 from ..inner_spider_utils import get_allowed_domains
+from ..inner_spider_utils import get_sec_level_data_by_selenium
 from local_utils.data_check_utils import check_data
 from local_utils.sqlutils import query_title
 from local_utils.myutils import get_valid_search_text
@@ -19,18 +20,27 @@ class CurrencySpider(scrapy.Spider):
     def __init__(self, *args, **kwargs):
         super(CurrencySpider, self).__init__(*args, **kwargs)
         self.isbn13 = kwargs.get('isbn13')
-        self.url_code = urllib.parse.quote(get_valid_search_text((query_title(self.isbn13))[0][0]))
+        self.search_text = get_valid_search_text((query_title(self.isbn13))[0][0])
+        self.url_code = urllib.parse.quote(self.search_text)
         self.start_urls = ['http://search.dangdang.com/?key=' + self.url_code + '&act=input']
         print('isbn13=%s, spider_name=%s, start_url=%s' % (self.isbn13, 'classfication', self.start_urls[0]))
     def parse(self, response):
         try:
             xpath = '//li[1]/p[1]/a/@href'
 
-            data = response.xpath(xpath).extract()[0]
+            data = response.xpath(xpath).extract()
 
-            yield scrapy.Request(data, callback=self.get_classfication, dont_filter=True)
+            if len(data) > 0:
+                data = data[0]
+                yield scrapy.Request(data, callback=self.get_classfication, dont_filter=True)
+            else: #当当上面查询不到或者访问受限，转到淘宝、
+                data2 = get_sec_level_data_by_selenium('taobao', self.search_text)
+
+                result = check_data('classfication', '>'.join(data2))
+
+                yield generate_item('classfication', self.isbn13, result)
         except Exception as e:
-            logger.warning(get_log_msg('parse', 'isbn13=%, e.msg=%s' % (self.isbn13, e)))
+            print(get_log_msg('parse', 'isbn13=%, e.msg=%s' % (self.isbn13, e)))
 
     def get_classfication(self, response):
         try:

@@ -39,10 +39,10 @@ def query_isbn_1(isbn):
         else:
             # msg = get_log_msg('query_isbn_1',
             #                            'query failure isbn:%s, error statu code:%s' % (isbn, status))
-            # logger.warning(msg)
+            # print(msg)
             return None
     except Exception as e:
-        # logger.warning(('%s' % e) + get_log_msg('query_isbn_1',
+        # print(('%s' % e) + get_log_msg('query_isbn_1',
         #                                          'query failure isbn:%s, error statu code:%s' % (isbn, status)))
         return None
 
@@ -66,7 +66,7 @@ def query_isbn_2(isbn):
     if error_code == 0:
         return book_infos.get('result')
     else:
-        logger.warning('fun:query_isbn_2, '
+        print('fun:query_isbn_2, '
                        'query failure isbn:%s, '
                        'error code:%s'
                        % (isbn, error_code))

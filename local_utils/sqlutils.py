@@ -126,4 +126,4 @@ def check_sql_str(str):
         after_str = str.replace('\'', '\"')
         return after_str
     except Exception as e:
-        logger.warning(get_log_msg('check_sql_str', 'str=%s,e.msg=%s' % (str, e)))
+        print(get_log_msg('check_sql_str', 'str=%s,e.msg=%s' % (str, e)))

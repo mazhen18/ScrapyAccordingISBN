@@ -8,6 +8,7 @@ from local_utils import pathutils
 import datetime
 from local_utils.pathutils import get_project_path
 import execjs
+from proxy.proxies import update_spider_proxies
 logger = logging.getLogger('myutils')
 
 
@@ -51,8 +52,8 @@ def get_unfound_list_flag(isbn13):
             list_timestamp.append(contain_isbn13.split('>')[0].strip())
         list_timestamp.sort(reverse=True)
         last_timestamp = list_timestamp[0]
-        d1 = datetime.datetime.strptime(last_timestamp, '%Y-%m-%d %H:%M:%S:%f')
-        d2 = datetime.datetime.strptime(get_current_timestamp('-m'), '%Y-%m-%d %H:%M:%S:%f')
+        d1 = datetime.datetime.strptime(last_timestamp, '%Y-%m-%d %H:%M:%S.%f')
+        d2 = datetime.datetime.strptime(get_current_timestamp('-m'), '%Y-%m-%d %H:%M:%S.%f')
         delta = d2 - d1
         return True if delta.days > 7 else False#间隔一周后可以再次查询
 
@@ -167,8 +168,8 @@ def get_log_msg(function_name, cur_msg):
 def get_valid_search_text(text):
 
     result = text
-    if len(text) > 65:
-        text = text[:65]
+    if len(text) > 50:
+        text = text[:50]
         result = ' '.join(text.split(' ')[:-1])
     return result
 
@@ -200,6 +201,22 @@ def get_current_timestamp(type='-m'):
     elif type == 's':
         return datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     elif type == '-m':
-        return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S:%f')
+        return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
     else:
         return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+
+def update_proxies_txt():
+    last_modify_time = os.path.getmtime(pathutils.get_proxies_txt_path())
+    last_modify_time = datetime.datetime.fromtimestamp(last_modify_time)
+    print('last_modify_time:', last_modify_time)
+
+    last_modify_time = datetime.datetime.strptime('%s' % last_modify_time, '%Y-%m-%d %H:%M:%S.%f')
+
+    current_time = datetime.datetime.strptime(get_current_timestamp('-m'), '%Y-%m-%d %H:%M:%S.%f')
+
+    delta = current_time - last_modify_time
+
+    if delta.days > 2:
+        update_spider_proxies()
+        print('update_proxies')

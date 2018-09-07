@@ -11,7 +11,9 @@
 /spiders/isbnSpider/isbnSpider/data_scrapy/__pycache__/
 /spiders/isbnSpider/isbnSpider/geckodriver.log
 /spiders/isbnSpider/isbnSpider/mysql_pipelines/__pycache__/
-/local_utils/__pycache__
+/local_utils/__pycache__/
 /exception/__pycache__/
 /local_utils/__pycache__/
 /unit_test
+/proxy/__pycache__/
+/proxy/proxies.txt
