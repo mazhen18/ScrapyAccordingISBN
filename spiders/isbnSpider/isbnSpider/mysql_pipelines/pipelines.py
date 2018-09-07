@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
-from utils.sqlutils import update_bookbaseinfos
+from local_utils.sqlutils import update_bookbaseinfos
 import logging
-from utils.myutils import obj2dict
+from local_utils.myutils import obj2dict
 from ..inner_spider_utils import break_scrapy
 
 logger = logging.getLogger('piplines')

@@ -1,7 +1,9 @@
+# from local_utils.myutils import get_log_msg
 import urllib.request
 import ssl
 import json
 import logging
+
 logger = logging.getLogger('query_isbn')
 
 
@@ -27,16 +29,21 @@ def query_isbn_1(isbn):
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
-    response = urllib.request.urlopen(request, context=ctx)
-    book_infos = json.loads(response.read())
-    status = book_infos.get('status')
-    if status == '0':
-        return book_infos.get('result')
-    else:
-        logger.warning('fun:query_isbn_1, '
-                       'query failure isbn:%s, '
-                       'error statu code:%s'
-                       % (isbn, status))
+    msg = ''
+    try:
+        response = urllib.request.urlopen(request, context=ctx)
+        book_infos = json.loads(response.read())
+        status = book_infos.get('status')
+        if status == '0':
+            return book_infos.get('result')
+        else:
+            # msg = get_log_msg('query_isbn_1',
+            #                            'query failure isbn:%s, error statu code:%s' % (isbn, status))
+            # logger.warning(msg)
+            return None
+    except Exception as e:
+        # logger.warning(('%s' % e) + get_log_msg('query_isbn_1',
+        #                                          'query failure isbn:%s, error statu code:%s' % (isbn, status)))
         return None
 
 

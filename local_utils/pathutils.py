@@ -28,3 +28,7 @@ def get_run_spider_path():
     return run_spider_path
 
 
+def get_unfound_isbn13_txt_path():
+    return get_project_path() + "/log/unfound_isbn13.txt"
+
+

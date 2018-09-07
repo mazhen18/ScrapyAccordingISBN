@@ -24,3 +24,5 @@ class BookBaseInfos():
     body_language = ''
     format = '' #开本
     class_cn = '' #中图分类号
+
+    create_time = ''

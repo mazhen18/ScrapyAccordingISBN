@@ -2,7 +2,7 @@ from scrapy.exceptions import CloseSpider
 from .items import CurrencyItem, TransNameItem, ClassficationItem, PriceItem
 from selenium import webdriver
 from exception.selenium_exception import SeleniumDriverException
-from utils.myutils import get_log_msg
+from local_utils.myutils import get_log_msg
 import logging
 logger = logging.getLogger('inner_spider_utils')
 
@@ -10,9 +10,9 @@ logger = logging.getLogger('inner_spider_utils')
 def break_scrapy(spider_name, isbn13, result, msg):
     msg = get_log_msg('break_scrapy', msg)
 
-    logger.error(msg) if result == 'fail' else logger.info(msg)
+    logger.warning(msg) if result == 'fail' else logger.info(msg)
 
-    raise CloseSpider("scrapy %s %s, isbn13=%s" % (spider_name, result, isbn13))
+    # raise CloseSpider("scrapy %s %s, isbn13=%s" % (spider_name, result, isbn13))
 
 
 def generate_item(spider_name, isbn13, result):

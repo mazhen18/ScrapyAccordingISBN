@@ -1,8 +1,8 @@
 import scrapy
 import logging
-from utils.myutils import google_translate
-from utils.sqlutils import query_title
-from utils.sqlutils import query_trans_name
+from local_utils.myutils import google_translate
+from local_utils.sqlutils import query_title
+from local_utils.sqlutils import query_trans_name
 from ..inner_spider_utils import get_allowed_domains
 from ..inner_spider_utils import generate_item
 from ..inner_spider_utils import break_scrapy
@@ -20,6 +20,7 @@ class TransNameItem(scrapy.Spider):
         super(TransNameItem, self).__init__(*args, **kwargs)
         self.isbn13 = kwargs.get('isbn13')
         self.start_urls = ['https://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=' + self.isbn13]
+        print('isbn13=%s, spider_name=%s, start_url=%s' % (self.isbn13, 'trans_name', self.start_urls[0]))
 
     def parse(self, response):
         try:

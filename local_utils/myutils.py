@@ -4,9 +4,9 @@ import logging.config
 import os
 import re
 import requests
-import urllib.parse
-
-from utils.pathutils import get_project_path
+from local_utils import pathutils
+import datetime
+from local_utils.pathutils import get_project_path
 import execjs
 logger = logging.getLogger('myutils')
 
@@ -37,9 +37,31 @@ def init_logging():
     return logging.getLogger("main")
 
 
-def check_isbn(isbn):
-    len_isbn = len(isbn)
-    return (len_isbn == 13 or len_isbn == 10) and isbn.isdigit()
+def get_unfound_list_flag(isbn13):
+    unfound_isbn13_list = get_list_from_txt(pathutils.get_unfound_isbn13_txt_path())
+    list_contain_isbn13 = []
+    for unfound_isbn13 in unfound_isbn13_list:
+        if unfound_isbn13.find(isbn13) != -1:
+            list_contain_isbn13.append(unfound_isbn13)
+    if len(list_contain_isbn13) == 0:
+        return True
+    else:
+        list_timestamp = []
+        for contain_isbn13 in list_contain_isbn13:
+            list_timestamp.append(contain_isbn13.split('>')[0].strip())
+        list_timestamp.sort(reverse=True)
+        last_timestamp = list_timestamp[0]
+        d1 = datetime.datetime.strptime(last_timestamp, '%Y-%m-%d %H:%M:%S:%f')
+        d2 = datetime.datetime.strptime(get_current_timestamp('-m'), '%Y-%m-%d %H:%M:%S:%f')
+        delta = d2 - d1
+        return True if delta.days > 7 else False#间隔一周后可以再次查询
+
+
+def check_isbn(isbn13):
+    len_isbn = len(isbn13)
+    len_flag = (len_isbn == 13 or len_isbn == 10) and isbn13.isdigit()
+    unfound_list_flag = get_unfound_list_flag(isbn13)
+    return len_flag and unfound_list_flag
 
 
 def obj2dict(obj):
@@ -138,19 +160,46 @@ def google_translate(content):
 
 
 def get_log_msg(function_name, cur_msg):
-    return '\n ==> [%s] msg=%s\n' % (function_name, cur_msg)
+    str = '\n ==> [%s] msg=%s\n' % (function_name, cur_msg)
+    return '%s' % str
 
 
 def get_valid_search_text(text):
 
     result = text
-    if len(text) > 70:
-        text = text[:70]
+    if len(text) > 65:
+        text = text[:65]
         result = ' '.join(text.split(' ')[:-1])
     return result
 
 
+def get_isbn13_list_from_txt(path):
+    return get_list_from_txt(path)
 
 
+def get_list_from_txt(path):
+    txt_list = []
+    with open(path, "r") as f:
+        lines = f.readlines()  # 读取全部内容 ，并以列表方式返回
+        for line in lines:
+            txt_list.append(line.strip())
+        return txt_list
 
 
+def append_unfound_isbn13_to_txt(isbn13):
+    txt_path = pathutils.get_unfound_isbn13_txt_path()
+    with open(txt_path, 'r+') as f:
+        content = f.read()
+        f.seek(0, 0)
+        f.write(('%s > %s\n' % (get_current_timestamp('-m'), isbn13)) + content)
+
+
+def get_current_timestamp(type='-m'):
+    if type == 'm':
+        return datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
+    elif type == 's':
+        return datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    elif type == '-m':
+        return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S:%f')
+    else:
+        return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

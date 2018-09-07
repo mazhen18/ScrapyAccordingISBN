@@ -1,17 +1,16 @@
-import utils.myutils as myutils
-import utils.pathutils
-import utils.sqlutils as sqlutils
+import local_utils.myutils as myutils
+import local_utils.pathutils
+import local_utils.sqlutils as sqlutils
 from spiders.SpiderThread import SpiderThread
 import argparse
 import sys
 import re
 
-sys.path.append(utils.pathutils.get_project_path() + '/venv/lib/python3.6/site-packages')
-
-logger = myutils.init_logging()
+sys.path.append(local_utils.pathutils.get_project_path() + '/venv/lib/python3.6/site-packages')
 
 
 def main(list_isbn):
+    logger = myutils.init_logging()
     isbn_list = list_isbn
     spider_thread_list = []
     count = 1
@@ -40,7 +39,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--isbn_list',
         type=str,
-        default='9780743200400',
+        default='9781848221499',
         help='input isbn list, example: "123456789123 1234251425621" '
     )
 
@@ -48,4 +47,5 @@ if __name__ == '__main__':
 
     list_isbn = re.split(r' +', args.isbn_list)
 
+    list_isbn = myutils.get_isbn13_list_from_txt("/Users/mazhen/Desktop/maomao/isbn13_query/2.txt")
     main(list_isbn)

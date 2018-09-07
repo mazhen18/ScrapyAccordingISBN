@@ -1,13 +1,17 @@
-from utils import myutils
-import utils.sqlutils as sqlutils
-from utils import pathutils
-from utils.pathutils import get_run_spider_path
-from utils.pathutils import get_virtualenv_python_path as get_python_path
+from local_utils import myutils
+import local_utils.sqlutils as sqlutils
+from local_utils import pathutils
+from local_utils.pathutils import get_run_spider_path
+from local_utils.pathutils import get_virtualenv_python_path as get_python_path
 import logging
 from data_struct.book import BookBaseInfos
 import threading
 import os
 from .data_check_utils import check_data
+from .sqlutils import check_sql_str
+import datetime
+from local_utils.myutils import get_log_msg
+from local_utils.myutils import get_current_timestamp
 
 logger = logging.getLogger('scrapyutils')
 
@@ -25,8 +29,9 @@ def scrap_bookinfos(isbn13):
         else:
             #开始爬取数据，先从api获取
             book_infos = myutils.query_book_infos(isbn13, company_code=1)
-            # book_infos = {'title': 'Principles', 'subtitle': 'Life and Work', 'pic': 'http://api.jisuapi.com/isbn/upload/201808/30214633_82281.jpg', 'author': 'Ray Dalio', 'summary': 'Ray Dalio, one of the world’s most successful investors and entrepreneurs, shares the unconventional principles that he’s developed, refined, and used over the past forty years to create unique results in both life and business—and which any person or organization can adopt to help achieve their goals.\nIn 1975, Ray Dalio founded an investment firm, Bridgewater Associates, out of his two-bedroom apartment in New York City. Forty years later, Bridgewater has made more money for its clients than an', 'publisher': 'Simon & Schuster', 'pubplace': '', 'pubdate': '2017-9-19', 'page': '592', 'price': '0.00', 'binding': 'Hardcover', 'isbn': '9781501124020', 'isbn10': '1501124021', 'keyword': '', 'edition': '', 'impression': '', 'language': '', 'format': '', 'class': ''}
+            # book_infos = {'title': 'Barbara Rae', 'subtitle': '', 'pic': 'http://api.jisuapi.com/isbn/upload/201809/07103254_68770.jpg', 'author': 'Hare, Bill/ Lambirth, Andrew/ ', 'summary': "Review\n'This is a strong, well-designed monograph... The authors deserve praise for their thorough and engaging writing and the illustrations brilliantly convey the power of paintings.' ----- The Art Book\nProduct Description\nThis is the first fully illustrated monograph of Barbara Rae's career to date. One of Britain's outstanding contemporary painters, Rae is a Royal Academician and the recipient of numerous awards including two doctorates and Commander of the British Empire (CBE). Known for th", 'publisher': '', 'pubplace': '', 'pubdate': '2008-5', 'page': '192', 'price': '487.66', 'binding': '', 'isbn': '9780853319900', 'isbn10': '0853319901', 'keyword': '', 'edition': '', 'impression': '', 'language': '', 'format': '', 'class': ''}
             if book_infos:
+                logger.info(get_log_msg('scrap_bookinfos', 'isbn13=%s,book_infos=%s' % (isbn13, book_infos)))
                 #获取api查询中的数据
                 book_base_infos = get_book_base_infos_from_api(book_infos)
                 sqlutils.insert_bookbaseinfos(myutils.obj2dict(book_base_infos))
@@ -34,8 +39,9 @@ def scrap_bookinfos(isbn13):
             else:
                 #全部数据都需要爬取，暂时不做
                 print('没有该ISBN数据信息：%s' % isbn13)
+                myutils.append_unfound_isbn13_to_txt(isbn13)
     else:
-        logger.warning("func:scrap_bookinfs, invalid argumant isbn:%s" % isbn13)
+        logger.warning(get_log_msg("scrap_bookinfs", "invalid argumant isbn13 or isbn13 in unfound_isbn13.txt,isbn13:%s" % isbn13))
 
 
 def get_title(title, subtitle):
@@ -48,23 +54,24 @@ def get_title(title, subtitle):
 def get_book_base_infos_from_api(book_infos):
     book_base_infos = BookBaseInfos()
     book_base_infos.isbn13 = book_infos.get('isbn')
-    book_base_infos.title = get_title(book_infos.get('title'), book_infos.get('subtitle'))
-    book_base_infos.pic = book_infos.get('pic')
-    book_base_infos.author = book_infos.get('author')
-    book_base_infos.summary = book_infos.get('summary')
-    book_base_infos.pubdate = book_infos.get('pubdate')
-    book_base_infos.publisher = book_infos.get('publisher')
-    book_base_infos.page = book_infos.get('page')
-    book_base_infos.binding = book_infos.get('binding')
-    book_base_infos.price = check_data('price', book_infos.get('price'))
-    book_base_infos.pubplace = book_infos.get('pubplace')
-    book_base_infos.isbn10 = book_infos.get('isbn10')
-    book_base_infos.keyword = book_infos.get('keyword')
-    book_base_infos.edition = book_infos.get('edition')
-    book_base_infos.impression = book_infos.get('impression')
-    book_base_infos.body_language = book_infos.get('language')
-    book_base_infos.format = book_infos.get('format')
-    book_base_infos.class_cn = book_infos.get('class')
+    book_base_infos.title = check_sql_str(get_title(book_infos.get('title'), book_infos.get('subtitle')))
+    book_base_infos.pic = check_sql_str(book_infos.get('pic'))
+    book_base_infos.author = check_sql_str(book_infos.get('author'))
+    book_base_infos.summary = check_sql_str(book_infos.get('summary'))
+    book_base_infos.pubdate = check_sql_str(book_infos.get('pubdate'))
+    book_base_infos.publisher = check_sql_str(book_infos.get('publisher'))
+    book_base_infos.page = check_sql_str(book_infos.get('page'))
+    book_base_infos.binding = check_sql_str(book_infos.get('binding'))
+    book_base_infos.price = check_sql_str(check_data('price', book_infos.get('price')))
+    book_base_infos.pubplace = check_sql_str(book_infos.get('pubplace'))
+    book_base_infos.isbn10 = check_sql_str(book_infos.get('isbn10'))
+    book_base_infos.keyword = check_sql_str(book_infos.get('keyword'))
+    book_base_infos.edition = check_sql_str(book_infos.get('edition'))
+    book_base_infos.impression = check_sql_str(book_infos.get('impression'))
+    book_base_infos.body_language = check_sql_str(book_infos.get('language'))
+    book_base_infos.format = check_sql_str(book_infos.get('format'))
+    book_base_infos.class_cn = check_sql_str(book_infos.get('class'))
+    book_base_infos.create_time = get_current_timestamp('m')
     return book_base_infos
 
 
@@ -141,5 +148,6 @@ class SpiderStartThread(threading.Thread):
 def start_scrapy(spider_name, isbn13):
     #在线程里启动爬虫
     t = SpiderStartThread('thread-%s-%s' % (spider_name, isbn13), isbn13, spider_name)
+    print('开始爬取，isbn13=%s, spider_name=%s' % (isbn13, spider_name))
     t.start()
     t.join()

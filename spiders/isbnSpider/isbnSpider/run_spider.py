@@ -2,7 +2,7 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 import argparse
 import logging
-from utils.myutils import get_log_msg
+from local_utils.myutils import get_log_msg
 logger = logging.getLogger('run_spider')
 
 
@@ -15,7 +15,7 @@ def run_spider(spider_name, isbn13):
 
         process.start()
     except Exception as e:
-        logger.error(get_log_msg('run_spider', e))
+        logger.warning(get_log_msg('run_spider', e))
 
 
 if __name__ == '__main__':
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--isbn13',
         type=str,
-        default='9780060555665',
+        default='9780553213102',
         help='input isbn13, example: "123456789123" '
     )
 

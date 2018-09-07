@@ -1,6 +1,6 @@
 import pymysql
 import logging
-from utils.myutils import get_log_msg
+from local_utils.myutils import get_log_msg
 logger = logging.getLogger("sqlutils")
 
 TABLE_NAME_BASE_INFOS = 'book_base_info'
@@ -119,3 +119,11 @@ def query_trans_name(title):
     except Exception as e:
         raise Exception(('%s' % e) + get_log_msg('insert_bookbaseinfos', 'sql=%s' % sql))
 
+
+def check_sql_str(str):
+    #处理单引号
+    try:
+        after_str = str.replace('\'', '\"')
+        return after_str
+    except Exception as e:
+        logger.warning(get_log_msg('check_sql_str', 'str=%s,e.msg=%s' % (str, e)))
