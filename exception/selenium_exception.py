@@ -1,5 +1,5 @@
 
 class SeleniumDriverException(Exception):
 
-    def __init__(self, *args):
-        self.args = args
+    def __init__(self, message, *args):
+        self.message = message

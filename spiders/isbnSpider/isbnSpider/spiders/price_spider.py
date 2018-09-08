@@ -3,7 +3,7 @@ import logging
 from local_utils.data_check_utils import check_data
 from ..inner_spider_utils import get_allowed_domains
 from ..inner_spider_utils import generate_item
-from ..inner_spider_utils import get_data_by_chromedriver
+from ..inner_spider_utils import get_bs4html_by_chromedriver
 from local_utils.myutils import get_log_msg
 logger = logging.getLogger('price_spider')
 
@@ -30,7 +30,7 @@ class CurrencySpider(scrapy.Spider):
             if data:
                 result = data[0]
             else:
-                result = get_data_by_chromedriver(self.start_urls[0], xpath[:-7])
+                result = get_bs4html_by_chromedriver(self.start_urls[0])
 
             result = check_data('price', result)
 

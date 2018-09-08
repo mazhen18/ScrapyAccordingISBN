@@ -2,7 +2,7 @@ import scrapy
 import logging
 from ..inner_spider_utils import generate_item
 from ..inner_spider_utils import get_allowed_domains
-from ..inner_spider_utils import get_sec_level_data_by_selenium
+from ..inner_spider_utils import get_data_by_selenium
 from local_utils.data_check_utils import check_data
 from local_utils.sqlutils import query_title
 from local_utils.myutils import get_valid_search_text
@@ -30,11 +30,11 @@ class CurrencySpider(scrapy.Spider):
 
             data = response.xpath(xpath).extract()
 
-            if len(data) > 0:
+            if len(data) < 0:
                 data = data[0]
                 yield scrapy.Request(data, callback=self.get_classfication, dont_filter=True)
             else: #当当上面查询不到或者访问受限，转到淘宝、
-                data2 = get_sec_level_data_by_selenium('taobao', self.search_text)
+                data2 = get_data_by_selenium('taobao', self.search_text, 'classfication')
 
                 result = check_data('classfication', '>'.join(data2))
 

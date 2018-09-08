@@ -72,3 +72,11 @@ def check_data(data_name, data):
         elif data_name == 'classfication':
             return check_classfication(data)
     return ''
+
+
+def check_href_url(domain, url):
+    if domain == 'taobao':
+        if url.find('http') == -1:
+            return 'http:' + url
+
+    return url

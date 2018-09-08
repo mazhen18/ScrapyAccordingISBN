@@ -123,7 +123,7 @@ def query_trans_name(title):
 def check_sql_str(str):
     #处理单引号
     try:
-        after_str = str.replace('\'', '\"')
+        after_str = str.replace('\'', '\'\'')
         return after_str
     except Exception as e:
         print(get_log_msg('check_sql_str', 'str=%s,e.msg=%s' % (str, e)))

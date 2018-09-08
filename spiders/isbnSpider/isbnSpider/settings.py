@@ -100,6 +100,6 @@ ITEM_PIPELINES = {
 #      'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware':None
 # }
 
-DOWNLOAD_TIMEOUT = 8
+DOWNLOAD_TIMEOUT = 15
 
 

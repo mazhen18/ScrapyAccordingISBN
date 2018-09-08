@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--isbn13',
         type=str,
-        default='9781529004717',
+        default='9781101873854',
         help='input isbn13, example: "123456789123" '
     )
 

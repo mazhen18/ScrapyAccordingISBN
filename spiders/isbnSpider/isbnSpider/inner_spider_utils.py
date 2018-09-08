@@ -1,11 +1,15 @@
-from scrapy.exceptions import CloseSpider
 from .items import CurrencyItem, TransNameItem, ClassficationItem, PriceItem
 from selenium import webdriver
 from exception.selenium_exception import SeleniumDriverException
+from local_utils.bs4utils import get_element_from_bs4html, get_detail_data_from_bs4html
+from bs4 import BeautifulSoup
 from local_utils.myutils import get_log_msg
 import re
+from local_utils.data_check_utils import check_href_url
+from local_utils.myutils import get_valid_search_text
 import difflib
 import logging
+import operator as op
 logger = logging.getLogger('inner_spider_utils')
 
 
@@ -47,70 +51,59 @@ def get_allowed_domains():
     return allowed_domains
 
 
-def get_data_by_chromedriver(url, xpath, attr=None):
+def get_bs4html_by_chromedriver(url):
 
     option = webdriver.ChromeOptions()
 
     option.add_argument('headless')
 
     driver = webdriver.Chrome(chrome_options=option)
-
     try:
 
         driver.get(url)
 
-        element = driver.find_element_by_xpath(xpath) #Selenium的xpath只能获取到元素，连text()都不能加，属性要靠get_attribute获取
+        if len(driver.page_source) > 300:
 
-        if attr:
-            return element.get_attribute(attr)
+            return BeautifulSoup(driver.page_source, 'html.parser')
         else:
-            return element.text
-    except BaseException as e:
-
-        raise SeleniumDriverException(message=('通过Selenium Driver 请求数据失败，e.msg=%s' % e))
-
+            return ''
+    except Exception as e:
+        return ''
     finally:
         driver.quit()
 
 
-def get_first_level_xpath(domain):
-    xpath_href = ''
-    if domain == 'taobao':
-        xpath_href = '//*[@id="mainsrp-itemlist"]/div/div/div[1]/div/div[2]/div[2]/a'
-    return xpath_href
-
-
 def get_url(domain, search_txt):
-    url_code = search_txt
     url = ''
     if domain == 'taobao':
 
-        url_code = re.sub(":|\'|,|\?|!|%|@|#|\$|&|\*|\(|\)|>|<", ' ', url_code)
+        url_code = re.sub(":|\'|\"|,|\?|!|%|@|#|\$|&|\*|\(|\)|>|<", ' ', search_txt)
 
-        url_code = re.replace(" +", '+', url_code)
+        url_code1 = re.sub(" +", '+', url_code)
 
-        url = "https://s.taobao.com/search?q=%s&imgfile=&commend" \
-              "=all&ssid=s5-e&search_type=item&sourceId=tb.index&spm" \
-              "=a21bo.2017.201856-taobao-item.1&ie=utf8&initiative_id" \
-              "=tbindexz_20170306" % url_code
+        # url = "https://s.taobao.com/search?q=%s&imgfile=&commend" \
+        #       "=all&ssid=s5-e&search_type=item&sourceId=tb.index&spm" \
+        #       "=a21bo.2017.201856-taobao-item.1&ie=utf8&initiative_id" \
+        #       "=tbindexz_20170306" % url_code1
+        url = 'https://s.taobao.com/search?q={}'.format(url_code1)
     return url
 
 
-def get_max_sim_index(str_list, target_str):
+def get_max_sim_index(title_list, target_str):
 
-    sim_ratio_list = []
+    sim_ratio_dic = {}
 
-    for str in enumerate(str_list):
+    for i, str in enumerate(title_list):
 
-        str_rm_zh = remove_zh(str)
+        str_rm_zh = get_valid_search_text(remove_zh(str))
 
-        seq = difflib.SequenceMatcher(None, str_rm_zh, target_str)
+        ratio = difflib.SequenceMatcher(None, str_rm_zh, target_str).ratio()
 
-        ratio = seq.ratio()
+        sim_ratio_dic.update({i: ratio})
 
-        sim_ratio_list.append(ratio)
+    sim_ratio_dic = sorted(sim_ratio_dic.items(), key=lambda d: d[1], reverse=True)
 
-    return sim_ratio_list.index(max(sim_ratio_list))
+    return [d[0] for d in sim_ratio_dic]
 
 
 def remove_zh(str):
@@ -118,45 +111,53 @@ def remove_zh(str):
     return ' '.join(result_list)
 
 
-def get_next_href(domain, search_txt):
+def get_detail_href_list(domain, search_txt):
 
-    url = get_url(domain, search_txt)
+    try:
+        url = get_url(domain, search_txt)
 
-    xpath = get_first_level_xpath(domain)
+        bs4html = get_bs4html_by_chromedriver(url)
 
-    href_list = get_data_by_chromedriver(url, xpath, 'href')
+        include_a_div_list = get_element_from_bs4html(domain, bs4html)
 
-    title_list = []
+        title_list = []
 
-    for i, title in enumerate(get_data_by_chromedriver(url, xpath)):
-        if i <= 4:
-            title_list.append(' '.join(title))
-        else:
-            break
+        href_list = []
 
-    max_sim_index = get_max_sim_index(title_list, search_txt)
+        for i, div in enumerate(include_a_div_list):
+            if i <= 4:
+                href_list.append(div.find('a').get('href'))
+                title_list.append(div.find('a').get_text().strip())
+            else:
+                break
 
-    next_href = href_list[max_sim_index]
+        max_sim_index_list = get_max_sim_index(title_list, search_txt)
 
-    return next_href
-
-
-def get_sec_level_xpath(domain):
-    xpath_href = ''
-    if domain == 'taobao':
-        xpath_href = '//*[@id="mainsrp-itemlist"]/div/div/div[1]/div/div[2]/div[2]/a'
-    return xpath_href
+        return [check_href_url(domain, href_list[max_sim_index])
+                for max_sim_index in max_sim_index_list]
+    except:
+        return ''
 
 
-def get_sec_level_data_by_selenium(domain, search_txt):
+def get_data_by_selenium(domain, search_txt, search_type):
 
-    next_href = get_next_href(domain, search_txt)
+    try:
+        detail_href_url_list = get_detail_href_list(domain, search_txt)
 
-    sec_level_xpath = get_sec_level_xpath(domain)
+        for i, detail_href_url in enumerate(detail_href_url_list):
 
-    data_list = get_data_by_chromedriver(next_href, sec_level_xpath)
+            bs4html = get_bs4html_by_chromedriver(detail_href_url)
 
-    return data_list
+            detail_data = get_detail_data_from_bs4html(domain, bs4html, search_type)
+
+            if detail_data:
+                return detail_data
+            if i == 2:
+                break
+
+        return ''
+    except:
+        return ''
 
 
 
