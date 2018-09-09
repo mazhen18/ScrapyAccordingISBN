@@ -17,3 +17,5 @@
 /unit_test
 /proxy/__pycache__/
 /proxy/proxies.txt
+/spiders/isbnSpider/log/
+/spiders/log/

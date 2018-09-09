@@ -15,7 +15,7 @@ def get_virtualenv_python_path():
 def get_spider_path(spider_name):
     project_path = get_project_path()
 
-    spider_path = project_path + '/isbnSpider/isbnSpider/spiders/' + spider_name + "_spider.py"
+    spider_path = project_path + '/spiders/isbnSpider/isbnSpider/spiders/' + spider_name + "_spider.py"
 
     return spider_path
 
@@ -30,10 +30,20 @@ def get_run_spider_path():
 
 
 def get_unfound_isbn13_txt_path():
-    return get_project_path() + "/log/unfound_isbn13.txt"
+    path = get_project_path() + "/spiders/isbnSpider/log/unfound_isbn13.txt"
+    if not os.path.exists(path):
+        f = open(path, 'w')
+        f.close()
+    return path
 
 
 def get_proxies_txt_path():
     return get_project_path() + "/proxy/proxies.txt"
 
 
+def get_spiders_dir_path():
+    project_path = get_project_path()
+
+    spiders_dir_path = project_path + '/spiders/isbnSpider'
+
+    return spiders_dir_path

@@ -3,9 +3,9 @@ import logging
 from local_utils.data_check_utils import check_data
 from ..inner_spider_utils import get_allowed_domains
 from ..inner_spider_utils import generate_item
-from ..inner_spider_utils import get_bs4html_by_chromedriver
 from local_utils.myutils import get_log_msg
-logger = logging.getLogger('price_spider')
+from local_utils.myutils import logger
+
 
 
 class CurrencySpider(scrapy.Spider):
@@ -18,7 +18,8 @@ class CurrencySpider(scrapy.Spider):
         super(CurrencySpider, self).__init__(*args, **kwargs)
         self.isbn13 = kwargs.get('isbn13')
         self.start_urls = ['https://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=' + self.isbn13]
-        print('isbn13=%s, spider_name=%s, start_url=%s' % (self.isbn13, 'price', self.start_urls[0]))
+        logger().info('isbn13=%s, spider_name=%s, start_url=%s'
+                      % (self.isbn13, 'price', self.start_urls[0]))
 
     def parse(self, response):
         try:
@@ -29,14 +30,13 @@ class CurrencySpider(scrapy.Spider):
             result = ''
             if data:
                 result = data[0]
-            else:
-                result = get_bs4html_by_chromedriver(self.start_urls[0])
 
             result = check_data('price', result)
 
             yield generate_item('price', self.isbn13, result)
         except Exception as e:
-            print(get_log_msg('parse', 'isbn13=%, e.msg=%s' % (self.isbn13, e)))
+            logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, e.msg=%s'
+                                          % (self.isbn13, 'price', e)))
 
 
 

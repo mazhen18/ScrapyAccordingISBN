@@ -8,7 +8,7 @@ handlers:
         class: logging.StreamHandler
         level: DEBUG
         formatter: simple
-    info_file_handler:
+    info_handler:
         class: logging.handlers.RotatingFileHandler
         level: INFO
         formatter: simple
@@ -16,7 +16,7 @@ handlers:
         maxBytes: 52428800
         backupCount: 20
         encoding: "utf8"
-    debug_file_handler:
+    debug_handler:
         class: logging.handlers.RotatingFileHandler
         level: DEBUG
         formatter: simple
@@ -24,7 +24,7 @@ handlers:
         maxBytes: 52428800
         backupCount: 20
         encoding: "utf8"
-    warning_file_handler:
+    warning_handler:
         class: logging.handlers.RotatingFileHandler
         level: WARNING
         formatter: simple
@@ -32,7 +32,7 @@ handlers:
         maxBytes: 52428800
         backupCount: 20
         encoding: "utf8"
-    error_file_handler:
+    error_handler:
         class: logging.handlers.RotatingFileHandler
         level: ERROR
         formatter: simple
@@ -42,10 +42,21 @@ handlers:
         encoding: "utf8"
 
 loggers:
-    fileLogger:
+    infoLogger:
+        level: INFO
+        handlers: [console, info_handler]
+        propagate: no
+    debugLogger:
         level: DEBUG
-        handlers: [console, info_file_handler,debug_file_handler,
-        warning_file_handler, error_file_handler]
+        handlers: [console, debug_handler]
+        propagate: no
+    warningLogger:
+        level: WARNING
+        handlers: [console, warning_handler]
+        propagate: no
+    errorLogger:
+        level: ERROR
+        handlers: [console, error_handler]
         propagate: no
 roots:
     level: DEBUG

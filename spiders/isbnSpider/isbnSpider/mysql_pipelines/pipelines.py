@@ -1,10 +1,7 @@
 # -*- coding:utf-8 -*-
 from local_utils.sqlutils import update_bookbaseinfos
-import logging
-from local_utils.myutils import obj2dict
-from ..inner_spider_utils import break_scrapy
-
-logger = logging.getLogger('piplines')
+from local_utils.myutils import get_log_msg
+from local_utils.myutils import logger
 
 
 class isbnPipeline(object):
@@ -29,8 +26,13 @@ class isbnPipeline(object):
 
                 result = 'success'
             except Exception as e:
-                msg = e + ',' + error_msg
+                msg = ('%s' % e) + ',' + error_msg
         else:
             msg = error_msg
 
-        break_scrapy(spider_name, item['isbn13'], result, msg)
+        msg = get_log_msg('process_item', msg)
+
+        if result == 'success':
+            logger('i').info(msg)
+        else:
+            logger('e').error(msg)

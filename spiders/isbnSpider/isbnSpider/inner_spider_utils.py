@@ -8,23 +8,21 @@ import re
 from local_utils.data_check_utils import check_href_url
 from local_utils.myutils import get_valid_search_text
 import difflib
-import logging
-import operator as op
-logger = logging.getLogger('inner_spider_utils')
+from scrapy.exceptions import CloseSpider
+from local_utils.myutils import logger
 
 
-def break_scrapy(spider_name, isbn13, result, msg):
-    msg = get_log_msg('break_scrapy', msg)
 
-    print(msg) if result == 'fail' else print(msg)
+def break_scrapy(spider_name, isbn13, result):
 
-    # raise CloseSpider("scrapy %s %s, isbn13=%s" % (spider_name, result, isbn13))
+    raise CloseSpider("scrapy %s %s, isbn13=%s" % (spider_name, result, isbn13))
 
 
 def generate_item(spider_name, isbn13, result):
     if not result:
         raise Exception(get_log_msg('generate_item',
-                                    'spider_name:%s,isbn13:%s,result:%s' % (spider_name, isbn13, result)))
+                                    'spider_name:%s,isbn13:%s, spider %s fail ,result:%s'
+                                    % (spider_name, isbn13, spider_name, result)))
     item = object()
     if spider_name == 'currency':
         item = CurrencyItem()
@@ -68,6 +66,7 @@ def get_bs4html_by_chromedriver(url):
         else:
             return ''
     except Exception as e:
+        logger('e').error(get_log_msg('get_bs4html_by_chromedriver', 'url=%s' % url))
         return ''
     finally:
         driver.quit()
@@ -103,7 +102,14 @@ def get_max_sim_index(title_list, target_str):
 
     sim_ratio_dic = sorted(sim_ratio_dic.items(), key=lambda d: d[1], reverse=True)
 
-    return [d[0] for d in sim_ratio_dic]
+    sim_index_list = []
+
+    for d in sim_ratio_dic:
+        if d[1] > 0.80:
+            sim_index_list.append(d[0])
+        else:
+            break
+    return sim_index_list
 
 
 def remove_zh(str):
@@ -136,6 +142,7 @@ def get_detail_href_list(domain, search_txt):
         return [check_href_url(domain, href_list[max_sim_index])
                 for max_sim_index in max_sim_index_list]
     except:
+        logger('e').error(get_log_msg('get_detail_href_list', 'domain=%s, search_txt=%s' % (domain, search_txt)))
         return ''
 
 
@@ -157,6 +164,9 @@ def get_data_by_selenium(domain, search_txt, search_type):
 
         return ''
     except:
+        logger('e').error(get_log_msg('get_data_by_selenium',
+                                      'domain=%s, search_txt=%s, search_type=%s'
+                                      % (domain, search_txt, search_type)))
         return ''
 
 

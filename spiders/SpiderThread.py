@@ -11,4 +11,5 @@ class SpiderThread(threading.Thread):
         self.isbn = isbn
 
     def run(self):
+
         scrap_bookinfos(self.isbn)

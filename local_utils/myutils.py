@@ -4,12 +4,11 @@ import logging.config
 import os
 import re
 import requests
-from local_utils import pathutils
 import datetime
 from local_utils.pathutils import get_project_path
 import execjs
 from proxy.proxies import update_spider_proxies
-logger = logging.getLogger('myutils')
+from local_utils import pathutils
 
 
 def query_book_infos(isbn, company_code=1):
@@ -18,24 +17,27 @@ def query_book_infos(isbn, company_code=1):
 
 def init_logging():
     def setup_logging(default_path="logging.yaml", default_level=logging.INFO, env_key="LOG_CFG"):
-        log_dir = get_project_path() + "/log/"
+        log_spider_dir = get_project_path() + "/spiders/log/"
+        # log_dir = get_project_path() + "/log/"
         log_dirs_list = ['info', 'debug', 'warning', 'error']
         for dir in log_dirs_list:
-            path = log_dir + dir
-            if not os.path.exists(path):
-                os.makedirs(path)
+            # log_path = log_dir + dir
+            log_spider_path = log_spider_dir + dir
+            # if not os.path.exists(log_path):
+            #     os.makedirs(log_path)
+            if not os.path.exists(log_spider_path):
+                os.makedirs(log_spider_path)
 
         path = default_path
-        value = os.getenv(env_key, None)
-        if value:
-            path = value
+        # value = os.getenv(env_key, None)
+        # if value:
+        #     path = value
         if os.path.exists(path):
             with open(path, "r") as f:
                 logging.config.dictConfig(yaml.load(f))
         else:
             logging.basicConfig(level=default_level)
     setup_logging(get_project_path() + "/setting/logging.yaml")
-    return logging.getLogger("main")
 
 
 def get_unfound_list_flag(isbn13):
@@ -55,7 +57,7 @@ def get_unfound_list_flag(isbn13):
         d1 = datetime.datetime.strptime(last_timestamp, '%Y-%m-%d %H:%M:%S.%f')
         d2 = datetime.datetime.strptime(get_current_timestamp('-m'), '%Y-%m-%d %H:%M:%S.%f')
         delta = d2 - d1
-        return True if delta.days > 7 else False#间隔一周后可以再次查询
+        return True if delta.days > 5 else False #间隔5天后可以再次查询
 
 
 def check_isbn(isbn13):
@@ -189,10 +191,38 @@ def get_list_from_txt(path):
 
 def append_unfound_isbn13_to_txt(isbn13):
     txt_path = pathutils.get_unfound_isbn13_txt_path()
+    #删除isbn13所在行
+    isbn13_row_num_list = get_row_num_list(isbn13, txt_path)
+
+    delete_special_lines_in_txt(isbn13_row_num_list, txt_path)
+
     with open(txt_path, 'r+') as f:
         content = f.read()
         f.seek(0, 0)
         f.write(('%s > %s\n' % (get_current_timestamp('-m'), isbn13)) + content)
+
+
+def delete_special_lines_in_txt(isbn13_row_num_list, txt_path):
+    files = open(txt_path, 'r+')
+    line_list = files.readlines()
+
+    for row_num in isbn13_row_num_list:
+        line_list[row_num] = ''
+
+    files.close()
+
+    files = open(txt_path, 'w+')
+    files.writelines(line_list)
+
+    files.close()
+
+def get_row_num_list(isbn13, txt_path):
+    isbn13_row_num_list = []
+    with open(txt_path, 'r+') as f:
+        for i, line in enumerate(f.readlines()):
+            if line.find(isbn13) != -1:
+                isbn13_row_num_list.append(i)
+        return isbn13_row_num_list
 
 
 def get_current_timestamp(type='-m'):
@@ -209,7 +239,6 @@ def get_current_timestamp(type='-m'):
 def update_proxies_txt():
     last_modify_time = os.path.getmtime(pathutils.get_proxies_txt_path())
     last_modify_time = datetime.datetime.fromtimestamp(last_modify_time)
-    print('last_modify_time:', last_modify_time)
 
     last_modify_time = datetime.datetime.strptime('%s' % last_modify_time, '%Y-%m-%d %H:%M:%S.%f')
 
@@ -219,4 +248,15 @@ def update_proxies_txt():
 
     if delta.days > 2:
         update_spider_proxies()
-        print('update_proxies')
+
+
+def logger(type='i'):
+
+    if type == 'i':
+        return logging.getLogger('infoLogger')
+    if type == 'd':
+        return logging.getLogger('debugLogger')
+    if type == 'w':
+        return logging.getLogger('warningLogger')
+    if type == 'e':
+        return logging.getLogger('errorLogger')

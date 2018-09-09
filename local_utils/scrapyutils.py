@@ -12,8 +12,8 @@ from .sqlutils import check_sql_str
 import datetime
 from local_utils.myutils import get_log_msg
 from local_utils.myutils import get_current_timestamp
+from local_utils.myutils import logger
 
-logger = logging.getLogger('scrapyutils')
 
 
 def scrap_bookinfos(isbn13):
@@ -31,17 +31,17 @@ def scrap_bookinfos(isbn13):
             book_infos = myutils.query_book_infos(isbn13, company_code=1)
             # book_infos = {'title': 'Barbara Rae', 'subtitle': '', 'pic': 'http://api.jisuapi.com/isbn/upload/201809/07103254_68770.jpg', 'author': 'Hare, Bill/ Lambirth, Andrew/ ', 'summary': "Review\n'This is a strong, well-designed monograph... The authors deserve praise for their thorough and engaging writing and the illustrations brilliantly convey the power of paintings.' ----- The Art Book\nProduct Description\nThis is the first fully illustrated monograph of Barbara Rae's career to date. One of Britain's outstanding contemporary painters, Rae is a Royal Academician and the recipient of numerous awards including two doctorates and Commander of the British Empire (CBE). Known for th", 'publisher': '', 'pubplace': '', 'pubdate': '2008-5', 'page': '192', 'price': '487.66', 'binding': '', 'isbn': '9780853319900', 'isbn10': '0853319901', 'keyword': '', 'edition': '', 'impression': '', 'language': '', 'format': '', 'class': ''}
             if book_infos:
-                print(get_log_msg('scrap_bookinfos', 'isbn13=%s,book_infos=%s' % (isbn13, book_infos)))
+                logger().info(get_log_msg('scrap_bookinfos', 'isbn13=%s,book_infos=%s' % (isbn13, book_infos)))
                 #获取api查询中的数据
                 book_base_infos = get_book_base_infos_from_api(book_infos)
                 sqlutils.insert_bookbaseinfos(myutils.obj2dict(book_base_infos))
                 scrapy_api_unable_get_infos(book_base_infos)
             else:
                 #全部数据都需要爬取，暂时不做
-                print('没有该ISBN数据信息：%s' % isbn13)
+                logger().info('没有该ISBN数据信息：%s' % isbn13)
                 myutils.append_unfound_isbn13_to_txt(isbn13)
-    else:
-        print(get_log_msg("scrap_bookinfs", "invalid argumant isbn13 or isbn13 in unfound_isbn13.txt,isbn13:%s" % isbn13))
+    # else:
+    #     logger().info(get_log_msg("scrap_bookinfs", "invalid argumant isbn13 or isbn13 in unfound_isbn13.txt,isbn13:%s" % isbn13))
 
 
 def get_title(title, subtitle):
@@ -138,16 +138,17 @@ class SpiderStartThread(threading.Thread):
         self.spider_name = spider_name
 
     def run(self):
-        command_cd = 'cd %s' % pathutils.get_project_path() + '/spiders/isbnSpider'
         command_start_spider = get_python_path() + " " \
                                + get_run_spider_path() \
                                + (' --spider_name=%s --isbn13=%s' % (self.spider_name, self.isbn13))
-        os.system(command_cd + ' && ' + command_start_spider)
+        os.system(command_start_spider)
+
 
 
 def start_scrapy(spider_name, isbn13):
     #在线程里启动爬虫
     t = SpiderStartThread('thread-%s-%s' % (spider_name, isbn13), isbn13, spider_name)
-    print('开始爬取，isbn13=%s, spider_name=%s' % (isbn13, spider_name))
+    logger().info('线程%s开始爬取，isbn13=%s, spider_name=%s' % (t.name, isbn13, spider_name))
     t.start()
     t.join()
+    logger().info('线程%s爬取结束，isbn13=%s, spider_name=%s' % (t.name, isbn13, spider_name))

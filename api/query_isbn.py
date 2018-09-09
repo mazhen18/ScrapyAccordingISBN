@@ -1,10 +1,9 @@
-# from local_utils.myutils import get_log_msg
+# -*- coding: utf-8 -*-
+
 import urllib.request
 import ssl
 import json
-import logging
 
-logger = logging.getLogger('query_isbn')
 
 
 def query_isbn(isbn, company_code=1):
@@ -66,8 +65,8 @@ def query_isbn_2(isbn):
     if error_code == 0:
         return book_infos.get('result')
     else:
-        print('fun:query_isbn_2, '
-                       'query failure isbn:%s, '
-                       'error code:%s'
-                       % (isbn, error_code))
+        # print('fun:query_isbn_2, '
+        #                'query failure isbn:%s, '
+        #                'error code:%s'
+        #                % (isbn, error_code))
         return None

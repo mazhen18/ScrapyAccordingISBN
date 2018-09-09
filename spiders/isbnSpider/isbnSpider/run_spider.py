@@ -1,9 +1,11 @@
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 import argparse
-import logging
+from local_utils.myutils import init_logging
 from local_utils.myutils import get_log_msg
-logger = logging.getLogger('run_spider')
+from local_utils.pathutils import get_spiders_dir_path
+import os
+os.chdir(get_spiders_dir_path())
 
 
 def run_spider(spider_name, isbn13):
@@ -24,14 +26,14 @@ if __name__ == '__main__':
     parser.add_argument(
         '--spider_name',
         type=str,
-        default='classfication',
+        default='price',
         help='input spider name'
     )
 
     parser.add_argument(
         '--isbn13',
         type=str,
-        default='9781101873854',
+        default='9780451532169',
         help='input isbn13, example: "123456789123" '
     )
 
@@ -40,5 +42,7 @@ if __name__ == '__main__':
     spider_name = args.spider_name
 
     isbn13 = args.isbn13
+
+    init_logging()
 
     run_spider(spider_name, isbn13)

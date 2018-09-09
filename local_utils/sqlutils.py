@@ -1,7 +1,6 @@
 import pymysql
-import logging
 from local_utils.myutils import get_log_msg
-logger = logging.getLogger("sqlutils")
+
 
 TABLE_NAME_BASE_INFOS = 'book_base_info'
 
@@ -126,4 +125,4 @@ def check_sql_str(str):
         after_str = str.replace('\'', '\'\'')
         return after_str
     except Exception as e:
-        print(get_log_msg('check_sql_str', 'str=%s,e.msg=%s' % (str, e)))
+        raise Exception(get_log_msg('check_sql_str', 'str=%s,e.msg=%s' % (str, e)))
