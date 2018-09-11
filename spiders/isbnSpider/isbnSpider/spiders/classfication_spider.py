@@ -2,7 +2,7 @@ import scrapy
 from ..inner_spider_utils import generate_item
 from ..inner_spider_utils import get_allowed_domains
 from ..inner_spider_utils import get_data_by_selenium
-from local_utils.data_check_utils import check_data
+from local_utils.data_check_utils import check_data_validity
 from local_utils.sqlutils import query_title
 from local_utils.myutils import get_valid_search_text
 import urllib.parse
@@ -39,7 +39,7 @@ class CurrencySpider(scrapy.Spider):
             else: #当当上面查询不到或者访问受限，转到淘宝、
                 data2 = get_data_by_selenium('taobao', self.search_text, 'classfication')
 
-                result = check_data('classfication', '>'.join(data2))
+                result = check_data_validity('classfication', '>'.join(data2))
 
                 yield generate_item('classfication', self.isbn13, result)
         except Exception as e:
@@ -61,7 +61,7 @@ class CurrencySpider(scrapy.Spider):
             if not data2:
                 data2 = get_data_by_selenium('taobao', self.search_text, 'classfication')
 
-            result = check_data('classfication', '>'.join(data2))
+            result = check_data_validity('classfication', '>'.join(data2))
 
             yield generate_item('classfication', self.isbn13, result)
         except Exception as e:

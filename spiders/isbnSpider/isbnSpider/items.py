@@ -20,12 +20,16 @@ class CurrencyItem(scrapy.Item):
 
     currency = scrapy.Field()
 
+    last_update_time = scrapy.Field()
+
 
 class PriceItem(scrapy.Item):
 
     isbn13 = scrapy.Field()
 
     price = scrapy.Field()
+
+    last_update_time = scrapy.Field()
 
 
 class ClassficationItem(scrapy.Item):
@@ -34,10 +38,14 @@ class ClassficationItem(scrapy.Item):
 
     classfication = scrapy.Field()
 
+    last_update_time = scrapy.Field()
+
 
 class TransNameItem(scrapy.Item):
     isbn13 = scrapy.Field()
 
     trans_name = scrapy.Field()
+
+    last_update_time = scrapy.Field()
 
 

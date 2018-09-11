@@ -63,7 +63,7 @@ def check_classfication(classfication):
         return ''
 
 
-def check_data(data_name, data):
+def check_data_validity(data_name, data):
     if data:
         if data_name == 'currency':
             return check_currency(data)

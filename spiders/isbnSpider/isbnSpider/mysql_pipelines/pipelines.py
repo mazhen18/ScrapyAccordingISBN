@@ -22,7 +22,7 @@ class isbnPipeline(object):
 
                 update_bookbaseinfos(item._values)
 
-                msg = 'data update succes, isbn13:%s, %s:%s' % (item['isbn13'], spider_name, value)
+                msg = 'data or last_update_time update succes, isbn13:%s, %s:%s' % (item['isbn13'], spider_name, value)
 
                 result = 'success'
             except Exception as e:
@@ -33,6 +33,6 @@ class isbnPipeline(object):
         msg = get_log_msg('process_item', msg)
 
         if result == 'success':
-            logger('i').info(msg)
+            logger().info(msg)
         else:
             logger('e').error(msg)

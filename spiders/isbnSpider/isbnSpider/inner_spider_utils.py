@@ -10,6 +10,8 @@ from local_utils.myutils import get_valid_search_text
 import difflib
 from scrapy.exceptions import CloseSpider
 from local_utils.myutils import logger
+from local_utils.myutils import get_current_timestamp_str
+
 
 
 
@@ -19,10 +21,10 @@ def break_scrapy(spider_name, isbn13, result):
 
 
 def generate_item(spider_name, isbn13, result):
-    if not result:
-        raise Exception(get_log_msg('generate_item',
-                                    'spider_name:%s,isbn13:%s, spider %s fail ,result:%s'
-                                    % (spider_name, isbn13, spider_name, result)))
+    # if not result:
+    #     raise Exception(get_log_msg('generate_item',
+    #                                 'spider_name:%s,isbn13:%s, spider %s fail ,result:%s'
+    #                                 % (spider_name, isbn13, spider_name, result)))
     item = object()
     if spider_name == 'currency':
         item = CurrencyItem()
@@ -35,6 +37,7 @@ def generate_item(spider_name, isbn13, result):
 
     item['isbn13'] = isbn13
     item[spider_name] = result
+    item['last_update_time'] = get_current_timestamp_str('m')
 
     return item
 

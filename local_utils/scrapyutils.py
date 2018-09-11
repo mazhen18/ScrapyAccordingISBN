@@ -1,17 +1,14 @@
 from local_utils import myutils
 import local_utils.sqlutils as sqlutils
-from local_utils import pathutils
 from local_utils.pathutils import get_run_spider_path
 from local_utils.pathutils import get_virtualenv_python_path as get_python_path
-import logging
 from data_struct.book import BookBaseInfos
 import threading
 import os
-from .data_check_utils import check_data
+from .data_check_utils import check_data_validity
 from .sqlutils import check_sql_str
-import datetime
 from local_utils.myutils import get_log_msg
-from local_utils.myutils import get_current_timestamp
+from local_utils.myutils import get_time_span_cmp_curr
 from local_utils.myutils import logger
 
 txt_lock = threading.Lock()
@@ -52,8 +49,14 @@ def scrap_bookinfos(isbn13):
                     # 释放锁
                     txt_lock.release()
         else:
+            logger().info(get_log_msg('scrap_bookinfos',
+                                      'isbn13 len invalid or in unfound_isbn13.txt: isbn13=%s'
+                                      % isbn13))
             txt_lock.release()
-    except:
+    except Exception as e:
+        logger('e').error(get_log_msg('scrap_bookinfos',
+                                      'isbn13 scrap_bookinfos exception, isbn13=%s, e.msg=%s'
+                                      % (isbn13, e)))
         txt_lock.release()
 
 def get_title(title, subtitle):
@@ -74,7 +77,7 @@ def get_book_base_infos_from_api(book_infos):
     book_base_infos.publisher = check_sql_str(book_infos.get('publisher'))
     book_base_infos.page = check_sql_str(book_infos.get('page'))
     book_base_infos.binding = check_sql_str(book_infos.get('binding'))
-    book_base_infos.price = check_sql_str(check_data('price', book_infos.get('price')))
+    book_base_infos.price = check_sql_str(check_data_validity('price', book_infos.get('price')))
     book_base_infos.pubplace = check_sql_str(book_infos.get('pubplace'))
     book_base_infos.isbn10 = check_sql_str(book_infos.get('isbn10'))
     book_base_infos.keyword = check_sql_str(book_infos.get('keyword'))
@@ -83,7 +86,7 @@ def get_book_base_infos_from_api(book_infos):
     book_base_infos.body_language = check_sql_str(book_infos.get('language'))
     book_base_infos.format = check_sql_str(book_infos.get('format'))
     book_base_infos.class_cn = check_sql_str(book_infos.get('class'))
-    book_base_infos.create_time = get_current_timestamp('m')
+    # book_base_infos.last_update_time = get_current_timestamp_str('m')
     return book_base_infos
 
 
@@ -110,6 +113,7 @@ def convert_db_data_to_bookbaseinfos(db_data):
     book_base_infos.body_language = db_data[18]
     book_base_infos.format =        db_data[19]
     book_base_infos.class_cn =      db_data[20]
+    book_base_infos.last_update_time=db_data[21]
     return book_base_infos
 
 
@@ -128,15 +132,25 @@ def check_data_integrity(book_base_infos):
 
 
 def scrapy_api_unable_get_infos(book_base_infos):
-    if book_base_infos.trans_name == '':
-        start_scrapy('trans_name', book_base_infos.isbn13)
-    if book_base_infos.classfication == '':
-        start_scrapy('classfication', book_base_infos.isbn13)
-    if book_base_infos.currency == '':
-        start_scrapy('currency', book_base_infos.isbn13)
-    if book_base_infos.price == '' \
-            or float(book_base_infos.price) < 0.5:
-        start_scrapy('price', book_base_infos.isbn13)
+
+    last_update_time = book_base_infos.last_update_time
+
+    delta = ''
+
+    if last_update_time:
+        delta = get_time_span_cmp_curr(last_update_time)
+
+    if last_update_time == '' or delta.days > 5:
+        if book_base_infos.trans_name == '':
+            start_scrapy('trans_name', book_base_infos.isbn13)
+        if book_base_infos.classfication == '':
+            start_scrapy('classfication', book_base_infos.isbn13)
+        if book_base_infos.currency == '':
+            start_scrapy('currency', book_base_infos.isbn13)
+        if book_base_infos.price == '' \
+                or float(book_base_infos.price) < 0.5:
+            start_scrapy('price', book_base_infos.isbn13)
+
 
 
 class SpiderStartThread(threading.Thread):
@@ -164,3 +178,4 @@ def start_scrapy(spider_name, isbn13):
     t.start()
     t.join()
     logger().info('线程%s爬取结束，isbn13=%s, spider_name=%s' % (t.name, isbn13, spider_name))
+

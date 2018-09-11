@@ -46,7 +46,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--isbn_list',
         type=str,
-        default='9780735353886 9791027601967 9791027603039 9781848221864',
+        default='9791027603039',
         help='input isbn list, example: "123456789123 1234251425621" '
     )
 

@@ -1,6 +1,6 @@
 import scrapy
 import logging
-from local_utils.data_check_utils import check_data
+from local_utils.data_check_utils import check_data_validity
 from ..inner_spider_utils import get_allowed_domains
 from ..inner_spider_utils import generate_item
 from local_utils.myutils import get_log_msg
@@ -27,7 +27,7 @@ class CurrencySpider(scrapy.Spider):
 
             data = response.xpath(xpath).extract()[0]
 
-            result = check_data('currency', data)
+            result = check_data_validity('currency', data)
 
             yield generate_item('currency', self.isbn13, result)
         except Exception as e:

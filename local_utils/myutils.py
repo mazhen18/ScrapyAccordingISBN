@@ -54,9 +54,7 @@ def get_unfound_list_flag(isbn13):
             list_timestamp.append(contain_isbn13.split('>')[0].strip())
         list_timestamp.sort(reverse=True)
         last_timestamp = list_timestamp[0]
-        d1 = datetime.datetime.strptime(last_timestamp, '%Y-%m-%d %H:%M:%S.%f')
-        d2 = datetime.datetime.strptime(get_current_timestamp('-m'), '%Y-%m-%d %H:%M:%S.%f')
-        delta = d2 - d1
+        delta = get_time_span_cmp_curr('%s' % last_timestamp, '-m')
         return True if delta.days > 5 else False #间隔5天后可以再次查询
 
 
@@ -194,17 +192,21 @@ def update_unfound_isbn13_to_txt(isbn13, type='d'):
 
     content = get_list_from_txt(txt_path)
 
+    count = 0
     for i, line in enumerate(content):
         if line.find(isbn13) != -1:
             content[i] = ''
+            count += 1
+
 
     if type == 'i':
-        content.insert(0, '%s > %s' % (get_current_timestamp('-m'), isbn13))
+        content.insert(0, '%s > %s' % (get_current_timestamp_str('-m'), isbn13))
 
-    open(txt_path, 'w').write('\n'.join(content))
+    if not (type == 'd' and count == 0):
+        open(txt_path, 'w').write('\n'.join(content))
 
 
-def get_current_timestamp(type='-m'):
+def get_current_timestamp_str(type='-m'):
     if type == 'm':
         return datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
     elif type == 's':
@@ -219,11 +221,7 @@ def update_proxies_txt():
     last_modify_time = os.path.getmtime(pathutils.get_proxies_txt_path())
     last_modify_time = datetime.datetime.fromtimestamp(last_modify_time)
 
-    last_modify_time = datetime.datetime.strptime('%s' % last_modify_time, '%Y-%m-%d %H:%M:%S.%f')
-
-    current_time = datetime.datetime.strptime(get_current_timestamp('-m'), '%Y-%m-%d %H:%M:%S.%f')
-
-    delta = current_time - last_modify_time
+    delta = get_time_span_cmp_curr('%s' % last_modify_time, '-m')
 
     if delta.days > 2:
         update_spider_proxies()
@@ -239,5 +237,26 @@ def logger(type='i'):
         return logging.getLogger('warningLogger')
     if type == 'e':
         return logging.getLogger('errorLogger')
+
+
+def get_datetime_from_str(timestamp, formate='m'):
+    date_time = ''
+    if formate == '-m':
+        date_time = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
+    if formate == 'm':
+        date_time = datetime.datetime.strptime(timestamp, '%Y%m%d%H%M%S%f')
+    if formate == '-s':
+        date_time = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+    if formate == 's':
+        date_time = datetime.datetime.strptime(timestamp, '%Y%m%d%H%M%S')
+    return date_time
+
+
+def get_time_span_cmp_curr(timestamp_str, formate='m'):
+    cmp_time = get_datetime_from_str('%s' % timestamp_str, formate)
+
+    current_time = get_datetime_from_str(get_current_timestamp_str(formate), formate)
+
+    return current_time - cmp_time
 
 
