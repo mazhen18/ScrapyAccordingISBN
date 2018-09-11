@@ -44,7 +44,7 @@ def scrap_bookinfos(isbn13):
                 else:
 
                     #全部数据都需要爬取，暂时不做
-                    logger().info('没有该ISBN数据信息：%s' % isbn13)
+                    logger().info('API数据库没有该ISBN数据信息：%s，尝试从网页爬取' % isbn13)
                     myutils.update_unfound_isbn13_to_txt(isbn13, 'i')
                     # 释放锁
                     txt_lock.release()
@@ -58,6 +58,7 @@ def scrap_bookinfos(isbn13):
                                       'isbn13 scrap_bookinfos exception, isbn13=%s, e.msg=%s'
                                       % (isbn13, e)))
         txt_lock.release()
+
 
 def get_title(title, subtitle):
     if subtitle == '':

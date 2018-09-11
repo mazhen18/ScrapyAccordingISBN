@@ -1,9 +1,7 @@
 import scrapy
-from local_utils.myutils import google_translate
-from local_utils.sqlutils import query_title
-from local_utils.sqlutils import query_trans_name
 from ..inner_spider_utils import get_allowed_domains
 from ..inner_spider_utils import generate_item
+from ..inner_spider_utils import get_trans_name_by_google_translate
 from ..items import TransNameItem
 from local_utils.myutils import get_log_msg
 from local_utils.myutils import logger
@@ -26,18 +24,8 @@ class TransNameItem(scrapy.Spider):
 
     def parse(self, response):
         try:
-            title = query_title(self.isbn13)[0][0]
-
-            trans_name_list = query_trans_name(title)
-
-            trans_name = ''
-
-            if not trans_name_list:
-                trans_name = trans_name_list[0][0]
-            else:
-                trans_name = google_translate(title)
-
-            yield generate_item('trans_name', self.isbn13, trans_name)
+            yield generate_item('trans_name', self.isbn13,
+                                get_trans_name_by_google_translate(self.isbn13))
         except Exception as e:
 
             logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, e.msg=%s'

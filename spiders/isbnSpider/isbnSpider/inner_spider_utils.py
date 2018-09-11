@@ -11,6 +11,13 @@ import difflib
 from scrapy.exceptions import CloseSpider
 from local_utils.myutils import logger
 from local_utils.myutils import get_current_timestamp_str
+from local_utils.myutils import google_translate
+from local_utils.sqlutils import query_title
+from local_utils.sqlutils import query_trans_name
+import scrapy
+from local_utils.data_check_utils import check_data_validity
+
+
 
 
 
@@ -173,6 +180,59 @@ def get_data_by_selenium(domain, search_txt, search_type):
         return ''
 
 
+def get_trans_name_by_google_translate(isbn13):
+
+    try:
+        title = query_title(isbn13)[0][0]
+
+        trans_name_list = query_trans_name(title)
+
+        if not trans_name_list:
+            return trans_name_list[0][0]
+        else:
+            return google_translate(title)
+    except:
+        return ''
+
+
+def get_classfication(response, isbn13, search_text):
+
+    def get_classfication_in(response, isbn13, search_text):
+        try:
+            url1 = response.url
+
+            xpath1 = ''
+            if url1.find('e.dangdang.com') != -1:
+                xpath1 = '//*[@id="productBookDetail"]/div[3]/p[5]/span/a/text()'
+            else:
+                xpath1 = '//*[@id="detail-category-path"]/span/a/text()'
+
+            data2 = response.xpath(xpath1).extract()
+
+            if not data2:
+                data2 = get_data_by_selenium('taobao', search_text, 'classfication')
+
+            return check_data_validity('classfication', '>'.join(data2))
+
+        except Exception as e:
+            logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, data2=%s, e.msg=%s'
+                                          % (isbn13, 'classfication', data2, e)))
+
+    try:
+        xpath = '//li[1]/p[1]/a/@href'
+
+        data = response.xpath(xpath).extract()
+
+        if len(data) > 0:
+            data = data[0]
+            yield scrapy.Request(data, callback=get_classfication_in, dont_filter=True)
+        else: #当当上面查询不到或者访问受限，转到淘宝、
+            data2 = get_data_by_selenium('taobao', search_text, 'classfication')
+
+            return check_data_validity('classfication', '>'.join(data2))
+    except Exception as e:
+        logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, e.msg=%s'
+                                      % (isbn13, 'classfication', e)))
 
 
 

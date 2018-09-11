@@ -19,3 +19,4 @@
 /proxy/proxies.txt
 /spiders/isbnSpider/log/
 /spiders/log/
+/spiders/isbnSpider/.DS_Store
