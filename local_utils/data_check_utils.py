@@ -35,12 +35,14 @@ def check_trans_name(trans_name):
 
 
 def check_price(price):
-    index = myutils.find_first_digit(price)
 
-    if index:
-        return price[index:]
-    else:
-        return ''
+    if price[0] == '$' and price[-1].isdigit():
+
+        index = myutils.find_first_digit(price)
+
+        if index:
+            return price[index:]
+    return ''
 
 
 def check_classfication(classfication):

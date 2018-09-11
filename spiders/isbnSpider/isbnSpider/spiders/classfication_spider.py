@@ -24,8 +24,8 @@ class CurrencySpider(scrapy.Spider):
         self.url_code = urllib.parse.quote(self.search_text)
         self.start_urls = ['http://search.dangdang.com/?key=' + self.url_code + '&act=input']
 
-        logger().info('isbn13=%s, spider_name=%s, start_url=%s'
-                      % (self.isbn13, 'classfication', self.start_urls[0]))
+        # logger().info('isbn13=%s, spider_name=%s, start_url=%s'
+        #               % (self.isbn13, 'classfication', self.start_urls[0]))
 
     def parse(self, response):
         try:
@@ -65,5 +65,5 @@ class CurrencySpider(scrapy.Spider):
 
             yield generate_item('classfication', self.isbn13, result)
         except Exception as e:
-            logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, e.msg=%s'
-                                          % (self.isbn13, 'classfication', e)))
+            logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, data2=%s, e.msg=%s'
+                                          % (self.isbn13, 'classfication', data2, e)))

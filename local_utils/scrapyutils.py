@@ -14,35 +14,47 @@ from local_utils.myutils import get_log_msg
 from local_utils.myutils import get_current_timestamp
 from local_utils.myutils import logger
 
-
-
+txt_lock = threading.Lock()
 def scrap_bookinfos(isbn13):
-    if myutils.check_isbn(isbn13):
-        result = sqlutils.query_list_isbn([isbn13])
-        if len(result) > 0 and result[0] != '':
-            # 更新一些可能变化的数据，暂时不更新
-            # logger.info('func:scrap_bookinfos, isbn already in database:%s:' % isbn)
-            # 判断是否存在空的必填值，如果有这要查询剩余值
-            book_base_infos = convert_db_data_to_bookbaseinfos(result[0])
-            if not check_data_integrity(book_base_infos):
-                scrapy_api_unable_get_infos(book_base_infos)
-        else:
-            #开始爬取数据，先从api获取
-            book_infos = myutils.query_book_infos(isbn13, company_code=1)
-            # book_infos = {'title': 'Barbara Rae', 'subtitle': '', 'pic': 'http://api.jisuapi.com/isbn/upload/201809/07103254_68770.jpg', 'author': 'Hare, Bill/ Lambirth, Andrew/ ', 'summary': "Review\n'This is a strong, well-designed monograph... The authors deserve praise for their thorough and engaging writing and the illustrations brilliantly convey the power of paintings.' ----- The Art Book\nProduct Description\nThis is the first fully illustrated monograph of Barbara Rae's career to date. One of Britain's outstanding contemporary painters, Rae is a Royal Academician and the recipient of numerous awards including two doctorates and Commander of the British Empire (CBE). Known for th", 'publisher': '', 'pubplace': '', 'pubdate': '2008-5', 'page': '192', 'price': '487.66', 'binding': '', 'isbn': '9780853319900', 'isbn10': '0853319901', 'keyword': '', 'edition': '', 'impression': '', 'language': '', 'format': '', 'class': ''}
-            if book_infos:
-                logger().info(get_log_msg('scrap_bookinfos', 'isbn13=%s,book_infos=%s' % (isbn13, book_infos)))
-                #获取api查询中的数据
-                book_base_infos = get_book_base_infos_from_api(book_infos)
-                sqlutils.insert_bookbaseinfos(myutils.obj2dict(book_base_infos))
-                scrapy_api_unable_get_infos(book_base_infos)
+    try:
+        # 获取锁
+        txt_lock.acquire()
+        if myutils.check_isbn(isbn13):
+            result = sqlutils.query_list_isbn([isbn13])
+            if len(result) > 0 and result[0] != '':
+                # 释放锁
+                txt_lock.release()
+                # 更新一些可能变化的数据，暂时不更新
+                # logger.info('func:scrap_bookinfos, isbn already in database:%s:' % isbn)
+                # 判断是否存在空的必填值，如果有这要查询剩余值
+                book_base_infos = convert_db_data_to_bookbaseinfos(result[0])
+                if not check_data_integrity(book_base_infos):
+                    scrapy_api_unable_get_infos(book_base_infos)
             else:
-                #全部数据都需要爬取，暂时不做
-                logger().info('没有该ISBN数据信息：%s' % isbn13)
-                myutils.append_unfound_isbn13_to_txt(isbn13)
-    # else:
-    #     logger().info(get_log_msg("scrap_bookinfs", "invalid argumant isbn13 or isbn13 in unfound_isbn13.txt,isbn13:%s" % isbn13))
+                #开始爬取数据，先从api获取
+                book_infos = myutils.query_book_infos(isbn13, company_code=1)
 
+                if book_infos:
+
+                    logger().info(get_log_msg('scrap_bookinfos', 'isbn13=%s,book_infos=%s' % (isbn13, book_infos)))
+                    #获取api查询中的数据
+                    book_base_infos = get_book_base_infos_from_api(book_infos)
+                    sqlutils.insert_bookbaseinfos(myutils.obj2dict(book_base_infos))
+                    myutils.update_unfound_isbn13_to_txt(isbn13)
+                    # 释放锁
+                    txt_lock.release()
+                    scrapy_api_unable_get_infos(book_base_infos)
+                else:
+
+                    #全部数据都需要爬取，暂时不做
+                    logger().info('没有该ISBN数据信息：%s' % isbn13)
+                    myutils.update_unfound_isbn13_to_txt(isbn13, 'i')
+                    # 释放锁
+                    txt_lock.release()
+        else:
+            txt_lock.release()
+    except:
+        txt_lock.release()
 
 def get_title(title, subtitle):
     if subtitle == '':

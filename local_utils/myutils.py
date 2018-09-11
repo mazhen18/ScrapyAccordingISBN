@@ -189,40 +189,19 @@ def get_list_from_txt(path):
         return txt_list
 
 
-def append_unfound_isbn13_to_txt(isbn13):
+def update_unfound_isbn13_to_txt(isbn13, type='d'):
     txt_path = pathutils.get_unfound_isbn13_txt_path()
-    #删除isbn13所在行
-    isbn13_row_num_list = get_row_num_list(isbn13, txt_path)
 
-    delete_special_lines_in_txt(isbn13_row_num_list, txt_path)
+    content = get_list_from_txt(txt_path)
 
-    with open(txt_path, 'r+') as f:
-        content = f.read()
-        f.seek(0, 0)
-        f.write(('%s > %s\n' % (get_current_timestamp('-m'), isbn13)) + content)
+    for i, line in enumerate(content):
+        if line.find(isbn13) != -1:
+            content[i] = ''
 
+    if type == 'i':
+        content.insert(0, '%s > %s' % (get_current_timestamp('-m'), isbn13))
 
-def delete_special_lines_in_txt(isbn13_row_num_list, txt_path):
-    files = open(txt_path, 'r+')
-    line_list = files.readlines()
-
-    for row_num in isbn13_row_num_list:
-        line_list[row_num] = ''
-
-    files.close()
-
-    files = open(txt_path, 'w+')
-    files.writelines(line_list)
-
-    files.close()
-
-def get_row_num_list(isbn13, txt_path):
-    isbn13_row_num_list = []
-    with open(txt_path, 'r+') as f:
-        for i, line in enumerate(f.readlines()):
-            if line.find(isbn13) != -1:
-                isbn13_row_num_list.append(i)
-        return isbn13_row_num_list
+    open(txt_path, 'w').write('\n'.join(content))
 
 
 def get_current_timestamp(type='-m'):
@@ -260,3 +239,5 @@ def logger(type='i'):
         return logging.getLogger('warningLogger')
     if type == 'e':
         return logging.getLogger('errorLogger')
+
+
