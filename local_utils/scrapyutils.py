@@ -11,16 +11,12 @@ from local_utils.myutils import get_log_msg
 from local_utils.myutils import get_time_span_cmp_curr
 from local_utils.myutils import logger
 
-txt_lock = threading.Lock()
+
 def scrap_bookinfos(isbn13):
     try:
-        # 获取锁
-        txt_lock.acquire()
         if myutils.check_isbn(isbn13):
             result = sqlutils.query_list_isbn([isbn13])
             if len(result) > 0 and result[0] != '':
-                # 释放锁
-                txt_lock.release()
                 # 更新一些可能变化的数据，暂时不更新
                 # logger.info('func:scrap_bookinfos, isbn already in database:%s:' % isbn)
                 # 判断是否存在空的必填值，如果有这要查询剩余值
@@ -37,27 +33,30 @@ def scrap_bookinfos(isbn13):
                     #获取api查询中的数据
                     book_base_infos = get_book_base_infos_from_api(book_infos)
                     sqlutils.insert_bookbaseinfos(myutils.obj2dict(book_base_infos))
+                    # 如果查询到就去之前的unfound列表删除unfound的记录
                     myutils.update_unfound_isbn13_to_txt(isbn13)
-                    # 释放锁
-                    txt_lock.release()
                     scrapy_api_unable_get_infos(book_base_infos)
                 else:
-
                     #全部数据都需要爬取，暂时不做
                     logger().info('API数据库没有该ISBN数据信息：%s，尝试从网页爬取' % isbn13)
-                    myutils.update_unfound_isbn13_to_txt(isbn13, 'i')
-                    # 释放锁
-                    txt_lock.release()
+                    scrapy_all_infos(isbn13)
         else:
             logger().info(get_log_msg('scrap_bookinfos',
                                       'isbn13 len invalid or in unfound_isbn13.txt: isbn13=%s'
                                       % isbn13))
-            txt_lock.release()
     except Exception as e:
         logger('e').error(get_log_msg('scrap_bookinfos',
                                       'isbn13 scrap_bookinfos exception, isbn13=%s, e.msg=%s'
                                       % (isbn13, e)))
-        txt_lock.release()
+
+
+def scrapy_all_infos(isbn13):
+    spider_name = 'all_infos'
+    t = SpiderStartThread('thread-%s-%s' % (spider_name, isbn13), isbn13, spider_name)
+    logger().info('线程%s开始爬取，isbn13=%s, spider_name=%s' % (t.name, isbn13, spider_name))
+    t.start()
+    t.join()
+    logger().info('线程%s爬取结束，isbn13=%s, spider_name=%s' % (t.name, isbn13, spider_name))
 
 
 def get_title(title, subtitle):

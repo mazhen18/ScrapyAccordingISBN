@@ -1,6 +1,5 @@
 from .items import CurrencyItem, TransNameItem, ClassficationItem, PriceItem
 from selenium import webdriver
-from exception.selenium_exception import SeleniumDriverException
 from local_utils.bs4utils import get_element_from_bs4html, get_detail_data_from_bs4html
 from bs4 import BeautifulSoup
 from local_utils.myutils import get_log_msg
@@ -16,10 +15,6 @@ from local_utils.sqlutils import query_title
 from local_utils.sqlutils import query_trans_name
 import scrapy
 from local_utils.data_check_utils import check_data_validity
-
-
-
-
 
 
 def break_scrapy(spider_name, isbn13, result):
@@ -195,44 +190,9 @@ def get_trans_name_by_google_translate(isbn13):
         return ''
 
 
-def get_classfication(response, isbn13, search_text):
 
-    def get_classfication_in(response, isbn13, search_text):
-        try:
-            url1 = response.url
 
-            xpath1 = ''
-            if url1.find('e.dangdang.com') != -1:
-                xpath1 = '//*[@id="productBookDetail"]/div[3]/p[5]/span/a/text()'
-            else:
-                xpath1 = '//*[@id="detail-category-path"]/span/a/text()'
 
-            data2 = response.xpath(xpath1).extract()
-
-            if not data2:
-                data2 = get_data_by_selenium('taobao', search_text, 'classfication')
-
-            return check_data_validity('classfication', '>'.join(data2))
-
-        except Exception as e:
-            logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, data2=%s, e.msg=%s'
-                                          % (isbn13, 'classfication', data2, e)))
-
-    try:
-        xpath = '//li[1]/p[1]/a/@href'
-
-        data = response.xpath(xpath).extract()
-
-        if len(data) > 0:
-            data = data[0]
-            yield scrapy.Request(data, callback=get_classfication_in, dont_filter=True)
-        else: #当当上面查询不到或者访问受限，转到淘宝、
-            data2 = get_data_by_selenium('taobao', search_text, 'classfication')
-
-            return check_data_validity('classfication', '>'.join(data2))
-    except Exception as e:
-        logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, e.msg=%s'
-                                      % (isbn13, 'classfication', e)))
 
 
 

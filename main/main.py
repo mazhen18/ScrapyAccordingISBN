@@ -46,7 +46,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--isbn_list',
         type=str,
-        default='9791027603039',
+        default='9781409582489',
         help='input isbn list, example: "123456789123 1234251425621" '
     )
 
@@ -54,6 +54,6 @@ if __name__ == '__main__':
 
     list_isbn = re.split(r' +', args.isbn_list)
 
-    list_isbn = myutils.get_isbn13_list_from_txt("/Users/mazhen/Desktop/maomao/isbn13_query/1.txt")
+    list_isbn = myutils.get_isbn13_list_from_txt("/Users/mazhen/Desktop/maomao/isbn13_query/1/1.txt")
 
     main(list_isbn)

@@ -1,3 +1,5 @@
+import threading
+
 from api.query_isbn import query_isbn
 import yaml
 import logging.config
@@ -10,6 +12,7 @@ import execjs
 from proxy.proxies import update_spider_proxies
 from local_utils import pathutils
 
+write_lock = threading.Lock()
 
 def query_book_infos(isbn, company_code=1):
     return query_isbn(isbn, company_code)
@@ -46,9 +49,11 @@ def get_unfound_list_flag(isbn13):
     for unfound_isbn13 in unfound_isbn13_list:
         if unfound_isbn13.find(isbn13) != -1:
             list_contain_isbn13.append(unfound_isbn13)
-    if len(list_contain_isbn13) == 0:
+    if len(list_contain_isbn13) == 0:#说明该ISBN13没有被查询过，或者查询过但是只要部分信息没查询到
         return True
     else:
+        #如果之前该isbn13就查询不到，那么就看最近一次查询时间，
+        # 如果最近一次查询时间到现在间隔小于5天就不在重复查询
         list_timestamp = []
         for contain_isbn13 in list_contain_isbn13:
             list_timestamp.append(contain_isbn13.split('>')[0].strip())
@@ -188,6 +193,7 @@ def get_list_from_txt(path):
 
 
 def update_unfound_isbn13_to_txt(isbn13, type='d'):
+    write_lock.acquire()
     txt_path = pathutils.get_unfound_isbn13_txt_path()
 
     content = get_list_from_txt(txt_path)
@@ -198,12 +204,17 @@ def update_unfound_isbn13_to_txt(isbn13, type='d'):
             content[i] = ''
             count += 1
 
-
     if type == 'i':
         content.insert(0, '%s > %s' % (get_current_timestamp_str('-m'), isbn13))
 
     if not (type == 'd' and count == 0):
-        open(txt_path, 'w').write('\n'.join(content))
+
+        with open(txt_path, 'w') as f:
+
+            f.write('\n'.join(content))
+
+    write_lock.release()
+
 
 
 def get_current_timestamp_str(type='-m'):

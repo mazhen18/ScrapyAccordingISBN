@@ -1,9 +1,8 @@
 import scrapy
-from ..inner_spider_utils import generate_item
-from ..inner_spider_utils import get_allowed_domains
-from ..inner_spider_utils import get_data_by_selenium
-from ..inner_spider_utils import get_classfication
+
 from local_utils.data_check_utils import check_data_validity
+from ..inner_spider_utils import generate_item, get_data_by_selenium
+from ..inner_spider_utils import get_allowed_domains
 from local_utils.sqlutils import query_title
 from local_utils.myutils import get_valid_search_text
 import urllib.parse
@@ -30,10 +29,42 @@ class CurrencySpider(scrapy.Spider):
 
     def parse(self, response):
         try:
-                result = get_classfication(response, self.isbn13, self.search_text)
+            xpath = '//li[1]/p[1]/a/@href'
 
-                yield generate_item('classfication', self.isbn13, result)
+            data = response.xpath(xpath).extract()
+
+            if len(data) > 0:
+                data = data[0]
+                yield scrapy.Request(data, callback=self.get_classfication, dont_filter=True)
+            else:  # 当当上面查询不到或者访问受限，转到淘宝、
+                data2 = get_data_by_selenium('taobao', self.search_text, 'classfication')
+
+                result =  check_data_validity('classfication', '>'.join(data2))
+
+            yield generate_item('classfication', self.isbn13, result)
         except Exception as e:
             logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, e.msg=%s'
                                           % (self.isbn13, 'classfication', e)))
+
+
+    def get_classfication(self, response):
+        try:
+            url1 = response.url
+
+            xpath1 = ''
+            if url1.find('e.dangdang.com') != -1:
+                xpath1 = '//*[@id="productBookDetail"]/div[3]/p[5]/span/a/text()'
+            else:
+                xpath1 = '//*[@id="detail-category-path"]/span/a/text()'
+
+            data2 = response.xpath(xpath1).extract()
+
+            if not data2:
+                data2 = get_data_by_selenium('taobao', self.search_text, 'classfication')
+
+            return check_data_validity('classfication', '>'.join(data2))
+
+        except Exception as e:
+            logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, data2=%s, e.msg=%s'
+                                          % (self.isbn13, 'classfication', data2, e)))
 

@@ -25,11 +25,18 @@ class CurrencySpider(scrapy.Spider):
         try:
             xpath = '//*[@id="result_0"]/div/div/div/div[2]/div[2]/div[1]/div[2]/a/span[2]/span/sup[1]/text()'
 
-            data = response.xpath(xpath).extract()[0]
+            data = response.xpath(xpath).extract()
+            result = ''
+            if not data:
+                xpath1 = '//*[@id="result_0"]/div/div/div/div[2]/div[3]/div[1]/div[2]/a/span[2]/span/sup[1]/text()'
+                data = response.xpath(xpath1).extract()
 
-            result = check_data_validity('currency', data)
+            if data:
+                result = data[0]
+
+            result = check_data_validity('currency', result)
 
             yield generate_item('currency', self.isbn13, result)
         except Exception as e:
             logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, data=%s, e.msg=%s'
-                                          % (self.isbn13, 'currency', data, e)))
+                                          % (self.isbn13, 'currency', result, e)))

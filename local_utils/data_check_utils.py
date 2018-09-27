@@ -28,11 +28,11 @@ def check_currency(currency):
 
 
 def check_trans_name(trans_name):
-    if myutils.contain_zh(trans_name):
-        return trans_name
-    else:
-        return ''
-
+    # if myutils.contain_zh(trans_name):
+    #     return trans_name
+    # else:
+    #     return ''
+    return trans_name
 
 def check_price(price):
 
