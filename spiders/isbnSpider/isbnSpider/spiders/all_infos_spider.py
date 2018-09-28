@@ -3,12 +3,13 @@ import scrapy
 
 from local_utils import myutils
 # from local_utils.scrapyutils import txt_lock
+from local_utils.sqlutils import check_sql_str
 from ..inner_spider_utils import get_allowed_domains
 from ..inner_spider_utils import get_data_by_selenium
 from ..inner_spider_utils import get_bs4html_by_chromedriver
-from local_utils.data_check_utils import check_data_validity
+from local_utils.data_check_utils import check_data_validity, check_isbn10
 import urllib.parse
-from local_utils.myutils import get_log_msg, google_translate, get_valid_search_text
+from local_utils.myutils import get_log_msg, google_translate, get_valid_search_text, get_xpath_result
 from local_utils.myutils import logger
 from ..items import AllInfosItem
 
@@ -38,7 +39,7 @@ class AllInfosSpider(scrapy.Spider):
 
                 if title:
 
-                    item['title'] = title[0] if len(title) > 0 else ''
+                    item['title'] = check_sql_str(title[0]) if len(title) > 0 else ''
 
                     pic_xpath = '//*[@id="result_0"]/div/div/div/div[1]/div/div/a/img/@src'
                     pic = response.xpath(pic_xpath).extract()
@@ -48,9 +49,9 @@ class AllInfosSpider(scrapy.Spider):
                     pubdate = response.xpath(pubdate_xpath).extract()
                     item['pubdate'] = pubdate[0] if len(pubdate) > 0 else ''
 
-                    author_xpath = '//*[@id="result_0"]/div/div/div/div[2]/div[1]/div[2]/span[2]/text()'
+                    author_xpath = '//*[@id="result_0"]/div/div/div/div[2]/div[1]/div[2]/span[position()>1]/text()'
                     author = response.xpath(author_xpath).extract()
-                    item['author'] = author[0] if len(author) > 0 else ''
+                    item['author'] = check_sql_str(''.join(author)) if len(author) > 0 else ''
 
                     binding_xpath = '//*[@id="result_0"]/div/div/div/div[2]/div[2]/div[1]/div[1]/a/h3/text()'
                     binding = response.xpath(binding_xpath).extract()
@@ -61,25 +62,30 @@ class AllInfosSpider(scrapy.Spider):
                     item['price'] = check_data_validity('price', price[0]) if len(price) > 0 else ''
 
                     currency_xpath = '//*[@id="result_0"]/div/div/div/div[2]/div[2]/div[1]/div[2]/a/span[2]/span/sup[1]/text()'
-                    currency = response.xpath(currency_xpath).extract()
-                    item['currency'] = check_data_validity('currency', currency[0]) if len(currency) > 0 else ''
+                    currency_xpath1 = '//*[@id="result_0"]/div/div/div/div[2]/div[3]/div[1]/div[2]/a/span[2]/span/sup[1]/text()'
+                    currency_xpath2 = '//*[@id="result_0"]/div/div/div/div[2]/div[3]/div[1]/div[1]/a/span[2]/span/sup[1]/text()'
+                    item['currency'] = get_xpath_result(response, 'currency', [currency_xpath, currency_xpath1, currency_xpath2])
 
                     amazon_sec_href_xpath = '//*[@id="result_0"]/div/div/div/div[2]/div[1]/div[1]/a/@href'
                     amazon_sec_href = response.xpath(amazon_sec_href_xpath).extract()
                     if len(amazon_sec_href) > 0:
                         bs4html = get_bs4html_by_chromedriver(amazon_sec_href[0])
-                        li_list = bs4html.find('table', {'id': "productDetailsTable"}).findAll('li')
-                        for li in li_list:
-                            b = li.find('b')
-                            if b and b.get_text().find('Paperback') != -1:
-                                item['page'] = li.get_text()
-                            if b and b.get_text().find('Publisher') != -1:
-                                item['publisher'] = ((str)(li.contents[1])).strip()
-                            if b and b.get_text().find('ISBN-10') != -1:
-                                item['isbn10'] = ((str)(li.contents[1])).strip()
+                        try:
+                            li_list = bs4html.find('table', {'id': "productDetailsTable"}).findAll('li')
+                            for li in li_list:
+                                b = li.find('b')
+                                if b and b.get_text().find('Paperback') != -1:
+                                    item['page'] = li.get_text()
+                                if b and b.get_text().find('Publisher') != -1:
+                                    item['publisher'] = check_sql_str(((str)(li.contents[1])).strip())
+                                if b and b.get_text().find('ISBN-10') != -1:
+                                    item['isbn10'] = check_isbn10(((str)(li.contents[1])).strip())
+                        except Exception as e:
+                            logger('e').error(get_log_msg('parse', 'get page、piblisher、isbn10 fail, isbn13=%s, spider_name=%s, e.msg=%s'
+                                                          % (self.isbn13, 'all_infos', e)))
 
                     if len(title) > 0:
-                        item['trans_name'] = google_translate(title[0])
+                        item['trans_name'] = check_sql_str(google_translate(title[0]))
                         self.url_code = urllib.parse.quote(title[0])
                         dangdang_urls = 'http://search.dangdang.com/?key=' + self.url_code + '&act=input'
                         yield scrapy.Request(url=dangdang_urls,
@@ -94,7 +100,7 @@ class AllInfosSpider(scrapy.Spider):
                 myutils.update_unfound_isbn13_to_txt(self.isbn13, 'i')
         except Exception as e:
             logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, e.msg=%s'
-                                          % (self.isbn13, 'classfication', e)))
+                                          % (self.isbn13, 'all_infos', e)))
 
     def get_dangdang_contain_infos(self, response):
 
@@ -138,11 +144,11 @@ class AllInfosSpider(scrapy.Spider):
 
                 classfication = get_data_by_selenium('taobao', search_text, 'classfication')
 
-            item['classfication'] = check_data_validity('classfication', '>'.join(classfication))
+            item['classfication'] = check_sql_str(check_data_validity('classfication', '>'.join(classfication)))
 
             summary_xpath = '//*[@id="description"]/div[2]/div[1]/div[2]/text()'
             summary = response.xpath(summary_xpath).extract()
-            item['summary'] = summary[0] if len(summary) > 0 else ''
+            item['summary'] = check_sql_str(summary[0]) if len(summary) > 0 else ''
 
             yield item
 

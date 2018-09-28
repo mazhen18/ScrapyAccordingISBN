@@ -39,9 +39,9 @@ class CurrencySpider(scrapy.Spider):
             else:  # 当当上面查询不到或者访问受限，转到淘宝、
                 data2 = get_data_by_selenium('taobao', self.search_text, 'classfication')
 
-                result =  check_data_validity('classfication', '>'.join(data2))
+                result = check_data_validity('classfication', '>'.join(data2))
 
-            yield generate_item('classfication', self.isbn13, result)
+                yield generate_item('classfication', self.isbn13, result)
         except Exception as e:
             logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, e.msg=%s'
                                           % (self.isbn13, 'classfication', e)))
@@ -62,7 +62,9 @@ class CurrencySpider(scrapy.Spider):
             if not data2:
                 data2 = get_data_by_selenium('taobao', self.search_text, 'classfication')
 
-            return check_data_validity('classfication', '>'.join(data2))
+            result = check_data_validity('classfication', '>'.join(data2))
+
+            yield generate_item('classfication', self.isbn13, result)
 
         except Exception as e:
             logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, data2=%s, e.msg=%s'

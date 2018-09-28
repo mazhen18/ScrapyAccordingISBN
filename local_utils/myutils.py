@@ -7,6 +7,8 @@ import os
 import re
 import requests
 import datetime
+
+from local_utils.data_check_utils import check_data_validity
 from local_utils.pathutils import get_project_path
 import execjs
 from proxy.proxies import update_spider_proxies
@@ -269,5 +271,24 @@ def get_time_span_cmp_curr(timestamp_str, formate='m'):
     current_time = get_datetime_from_str(get_current_timestamp_str(formate), formate)
 
     return current_time - cmp_time
+
+
+def get_xpath_result(response, spider_name, xpath_list):
+
+    result = ''
+
+    for xpath in xpath_list:
+
+        data = response.xpath(xpath).extract()
+
+        if data:
+            result = data[0]
+            break
+
+    return check_data_validity(spider_name, result)
+
+
+
+
 
 

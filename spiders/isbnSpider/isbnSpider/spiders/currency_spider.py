@@ -3,7 +3,7 @@ import logging
 from local_utils.data_check_utils import check_data_validity
 from ..inner_spider_utils import get_allowed_domains
 from ..inner_spider_utils import generate_item
-from local_utils.myutils import get_log_msg
+from local_utils.myutils import get_log_msg, get_xpath_result
 from local_utils.myutils import logger
 
 
@@ -24,17 +24,9 @@ class CurrencySpider(scrapy.Spider):
     def parse(self, response):
         try:
             xpath = '//*[@id="result_0"]/div/div/div/div[2]/div[2]/div[1]/div[2]/a/span[2]/span/sup[1]/text()'
-
-            data = response.xpath(xpath).extract()
-            result = ''
-            if not data:
-                xpath1 = '//*[@id="result_0"]/div/div/div/div[2]/div[3]/div[1]/div[2]/a/span[2]/span/sup[1]/text()'
-                data = response.xpath(xpath1).extract()
-
-            if data:
-                result = data[0]
-
-            result = check_data_validity('currency', result)
+            xpath1 = '//*[@id="result_0"]/div/div/div/div[2]/div[3]/div[1]/div[2]/a/span[2]/span/sup[1]/text()'
+            xpath2 = '//*[@id="result_0"]/div/div/div/div[2]/div[3]/div[1]/div[1]/a/span[2]/span/sup[1]/text()'
+            result = get_xpath_result(response, 'currency', [xpath, xpath1, xpath2])
 
             yield generate_item('currency', self.isbn13, result)
         except Exception as e:

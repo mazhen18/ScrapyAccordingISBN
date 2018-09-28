@@ -59,9 +59,9 @@ def generate_insert_sql(table_name, dict_data):
 
 def generate_update_sql(table_name, dict_data, isbn13):
     t = ('isbn13', isbn13)
-    sql = 'UPDATE %s SET ' % table_name \
-          + ','.join(['%s=%r' % (k, dict_data[k]) for k in dict_data]) \
-          + ' WHERE %s=%r;' % (t[0], t[1])
+
+    sql = "UPDATE %s SET %s WHERE %s='%s'" % (table_name, ','.join(["%s='%s'" % (k, dict_data[k]) for k in dict_data]), t[0], t[1])
+
     return sql
 
 

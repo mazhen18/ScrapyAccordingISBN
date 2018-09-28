@@ -63,6 +63,17 @@ def check_classfication(classfication):
         return ''
 
 
+def check_isbn10(data):
+
+    len = len(data)
+
+    if len == 10 and data.isdigit():
+        return data
+    else:
+        return ''
+
+
+
 def check_data_validity(data_name, data):
     if data:
         if data_name == 'currency':
@@ -73,6 +84,8 @@ def check_data_validity(data_name, data):
             return check_price(data)
         elif data_name == 'classfication':
             return check_classfication(data)
+        elif data_name == 'isbn10':
+            return check_isbn10(data)
     return ''
 
 
