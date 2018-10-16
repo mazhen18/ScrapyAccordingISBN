@@ -26,14 +26,14 @@ if __name__ == '__main__':
     parser.add_argument(
         '--spider_name',
         type=str,
-        default='all_infos',
+        default='summary',
         help='input spider name'
     )
 
     parser.add_argument(
         '--isbn13',
         type=str,
-        default='9781474936668',
+        default='9780811877824',
         help='input isbn13, example: "123456789123" '
     )
 

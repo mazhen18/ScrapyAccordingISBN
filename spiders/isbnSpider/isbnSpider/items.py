@@ -48,6 +48,13 @@ class TransNameItem(scrapy.Item):
 
     last_update_time = scrapy.Field()
 
+class SummaryItem(scrapy.Item):
+    isbn13 = scrapy.Field()
+
+    summary = scrapy.Field()
+
+    last_update_time = scrapy.Field()
+
 
 class AllInfosItem(scrapy.Item):
     isbn13 = scrapy.Field()

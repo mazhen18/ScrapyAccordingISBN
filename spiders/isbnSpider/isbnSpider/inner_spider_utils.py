@@ -36,6 +36,8 @@ def generate_item(spider_name, isbn13, result):
         item = ClassficationItem()
     if spider_name == 'price':
         item = PriceItem()
+    if spider_name == 'summary':
+        item = PriceItem()
 
     item['isbn13'] = isbn13
     item[spider_name] = result
@@ -63,11 +65,13 @@ def get_bs4html_by_chromedriver(url):
     driver = webdriver.Chrome(chrome_options=option)
     try:
 
-        driver.get(url)
+        driver.get(url) #耗时较长
 
-        if len(driver.page_source) > 300:
+        page_source = driver.page_source
 
-            return BeautifulSoup(driver.page_source, 'html.parser')
+        if len(page_source) > 300:#避免返回的html文本内容不全
+
+            return BeautifulSoup(page_source, 'html.parser')
         else:
             return ''
     except Exception as e:

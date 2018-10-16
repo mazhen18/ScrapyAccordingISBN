@@ -86,7 +86,7 @@ class AllInfosSpider(scrapy.Spider):
 
                     if len(title) > 0:
                         item['trans_name'] = check_sql_str(google_translate(title[0]))
-                        self.url_code = urllib.parse.quote(title[0])
+                        self.url_code = urllib.parse.quote(get_valid_search_text(title[0]))
                         dangdang_urls = 'http://search.dangdang.com/?key=' + self.url_code + '&act=input'
                         yield scrapy.Request(url=dangdang_urls,
                                              callback=self.get_dangdang_contain_infos,
@@ -94,10 +94,10 @@ class AllInfosSpider(scrapy.Spider):
                                              dont_filter=True)
                     else:
                         yield item
-                else:
-                    myutils.update_unfound_isbn13_to_txt(self.isbn13, 'i')
-            else:
-                myutils.update_unfound_isbn13_to_txt(self.isbn13, 'i')
+                # else:
+                    # myutils.update_unfound_isbn13_to_txt(self.isbn13, 'i')
+            # else:
+                # myutils.update_unfound_isbn13_to_txt(self.isbn13, 'i')
         except Exception as e:
             logger('e').error(get_log_msg('parse', 'isbn13=%s, spider_name=%s, e.msg=%s'
                                           % (self.isbn13, 'all_infos', e)))

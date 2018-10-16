@@ -27,9 +27,6 @@ class isbnPipeline(object):
                         update_bookbaseinfos(item._values)
                         msg = 'data or last_update_time update succes, isbn13:%s, spider_name:%s, spider_value:%s' % (item['isbn13'], spider_name, value)
                         result = 'success'
-
-
-
             except Exception as e:
                 msg = ('%s' % e) + ',' + msg
 

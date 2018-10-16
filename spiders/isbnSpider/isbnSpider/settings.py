@@ -93,6 +93,10 @@ ITEM_PIPELINES = {
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+
+#代理配置
+
 # DOWNLOADER_MIDDLEWARES = {
 #
 #      'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware':None,

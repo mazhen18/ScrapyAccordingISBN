@@ -1,6 +1,5 @@
 import pymysql
-from local_utils.myutils import get_log_msg
-
+from local_utils.myutils import get_log_msg, get_isbn13_list_from_txt
 
 TABLE_NAME_BASE_INFOS = 'book_base_info'
 
@@ -125,3 +124,32 @@ def check_sql_str(str):
         return str.replace('\'', '\'\'')
     except:
         return ''
+
+
+def generate_found_isbn13_sql(clean_isbn13_path, unfound_isbn13_path, found_isbn13_path):
+
+    target_isbn13_list = get_isbn13_list_from_txt(clean_isbn13_path)
+
+    unfound_isbn13_list = get_isbn13_list_from_txt(unfound_isbn13_path)
+
+    found_isbn13_list = []
+
+    for isbn13 in target_isbn13_list:
+
+        if not unfound_isbn13_list.__contains__(isbn13):
+
+            found_isbn13_list.append(isbn13)
+
+    if found_isbn13_list:
+
+        isbn_condition_sql = "isbn13='%s'" % found_isbn13_list[0]
+
+        for isbn13 in found_isbn13_list[1:]:
+
+            isbn_condition_sql += " OR isbn13='%s'" % isbn13
+
+        sql = "SELECT * FROM %s WHERE %s" % (TABLE_NAME_BASE_INFOS, isbn_condition_sql)
+
+        print(sql)
+
+        open(found_isbn13_path, 'w').write('\n'.join(found_isbn13_list))

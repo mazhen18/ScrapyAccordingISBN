@@ -65,9 +65,9 @@ def check_classfication(classfication):
 
 def check_isbn10(data):
 
-    len = len(data)
+    len_isbn = len(data)
 
-    if len == 10 and data.isdigit():
+    if len_isbn == 10 and data.isdigit():
         return data
     else:
         return ''

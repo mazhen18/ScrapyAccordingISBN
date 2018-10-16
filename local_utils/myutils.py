@@ -68,8 +68,9 @@ def get_unfound_list_flag(isbn13):
 def check_isbn(isbn13):
     len_isbn = len(isbn13)
     len_flag = (len_isbn == 13 or len_isbn == 10) and isbn13.isdigit()
-    unfound_list_flag = get_unfound_list_flag(isbn13)
-    return len_flag and unfound_list_flag
+    # unfound_list_flag = get_unfound_list_flag(isbn13)
+    # return len_flag and unfound_list_flag
+    return len_flag
 
 
 def obj2dict(obj):

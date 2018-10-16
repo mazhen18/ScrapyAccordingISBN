@@ -34,7 +34,7 @@ def scrap_bookinfos(isbn13):
                     book_base_infos = get_book_base_infos_from_api(book_infos)
                     sqlutils.insert_bookbaseinfos(myutils.obj2dict(book_base_infos))
                     # 如果查询到就去之前的unfound列表删除unfound的记录
-                    myutils.update_unfound_isbn13_to_txt(isbn13)
+                    # myutils.update_unfound_isbn13_to_txt(isbn13)
                     scrapy_api_unable_get_infos(book_base_infos)
                 else:
                     #全部数据都需要爬取，暂时不做
@@ -140,7 +140,7 @@ def scrapy_api_unable_get_infos(book_base_infos):
     if last_update_time:
         delta = get_time_span_cmp_curr(last_update_time)
 
-    if last_update_time == '' or delta.days > 5:
+    if last_update_time == '' or delta.days > 0:
         if book_base_infos.trans_name == '':
             start_scrapy('trans_name', book_base_infos.isbn13)
         if book_base_infos.classfication == '':
@@ -150,7 +150,8 @@ def scrapy_api_unable_get_infos(book_base_infos):
         if book_base_infos.price == '' \
                 or float(book_base_infos.price) < 0.5:
             start_scrapy('price', book_base_infos.isbn13)
-
+        if book_base_infos.summary == '':
+            start_scrapy('summary', book_base_infos.isbn13)
 
 
 class SpiderStartThread(threading.Thread):

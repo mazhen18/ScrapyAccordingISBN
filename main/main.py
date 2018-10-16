@@ -22,8 +22,9 @@ def main(list_isbn):
     spider_thread_list = []
     count = 1
     for isbn in isbn_list:
-        if count <= 100:
+        if count <= 1000:
             spider_thread_list.append(SpiderThread('thread-%d-%s' % (count, isbn), isbn))
+            count += 1
         else:
             logger('w').warning(get_log_msg("fun:main", "query count > 100"))
             break
@@ -34,10 +35,11 @@ def main(list_isbn):
     for thread in spider_thread_list:
         thread.join()
 
-    #查询数据库中数据，返回list
-    result_list = sqlutils.query_list_isbn(list_isbn)
 
-    return result_list
+    #查询数据库中数据，返回list
+    # result_list = sqlutils.query_list_isbn(list_isbn)
+    #
+    # return result_list
 
 
 if __name__ == '__main__':
@@ -54,6 +56,6 @@ if __name__ == '__main__':
 
     list_isbn = re.split(r' +', args.isbn_list)
 
-    list_isbn = myutils.get_isbn13_list_from_txt("/Users/mazhen/Desktop/maomao/isbn13_query/1/1.txt")
+    list_isbn = myutils.get_isbn13_list_from_txt("/Users/mazhen/Desktop/maomao/isbn13_query/2/2_found_isbn13.txt")
 
     main(list_isbn)

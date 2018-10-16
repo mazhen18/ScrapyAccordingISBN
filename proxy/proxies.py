@@ -97,3 +97,6 @@ def update_spider_proxies():
     with open(get_proxies_txt_path(), 'w') as f:
         for proxy in proxie:
             f.write(proxy + '\n')
+
+
+# update_spider_proxies()
